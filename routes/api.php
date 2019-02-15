@@ -22,4 +22,5 @@ Route::post('/u','UserController@store'); //Register
 Route::get('/u/verify/{code}','UserController@verify');//From email
 Route::post('/u/rp/email','UserController@resetpassword');//Reset password and sent new user password
 Route::post('/u/lg','UserController@authenticate'); //Login and reset password, use password_new but new password
+Route::get('/u','UserController@index');//Get users
 

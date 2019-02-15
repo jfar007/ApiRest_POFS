@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\User;
+use App\Rol;
 use App\Mail\VerifyRegister;
 use Mail;
 use JWTAuth; 
@@ -20,7 +21,17 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $Users=User::all();
+
+        foreach ($Users as $user)
+        {
+
+            $user= $this->valideRelations($user);
+    
+            $user->save();
+        }
+  
+        return $Users;
     }
 
     /**
@@ -53,21 +64,27 @@ class UserController extends Controller
                     $x = false;                
                 
         }
-        $parameters =  ['rol_id' => 1,
-                        'username' =>  $username,
+        $parameters =  ['username' =>  $username,
                         'password' =>$passtemp ,
                         'confirmation_code' => str_random(25)];
         $userpr->add($parameters);
         $user =  User::create($userpr->all());
 
         $register = 1;
-        Mail::to($user->email)->send(new VerifyRegister($user, $register));
+         Mail::to($user->email)->send(new VerifyRegister($user, $register));
        
-       
-       $user->password=bcrypt($passtemp);
-       $user->save();
-        
-       return $user;   
+        $user->password=bcrypt($passtemp);
+        $user->save();
+
+   
+       if(isset($user['rol_id']) && !$user['rol_id'] == null) {
+            $rol = Rol::find($user->rol_id);
+            $user->rol()->associate($rol);
+        } 
+   
+
+       return $user; 
+   
 
     }
 
@@ -133,8 +150,17 @@ class UserController extends Controller
             $user->confirmed = true;   
             $user->save();
 
+
+        $userrsp = Auth::user();
+    
+        if(isset($userrsp->rol_id) && $userrsp->rol_id != null) {
+            $rol = Rol::find($userrsp->rol_id);
+            $userrsp->rol()->associate($rol);
+        } 
+            
+    
         $response = compact('tocken');
-        $response['user'] = Auth::user();       
+        $response['user'] = $userrsp;
         return $response;
         // return  response()->json(['message' => 
         // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
@@ -149,7 +175,31 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = User::where('id', $id)->first();
+        
+        $user = valideRelations($user);
+   
+
+        return $user;
+    }
+
+    public function valideRelations(User $user){
+        if(isset($user['rol_id']) && !$user['rol_id'] == null) {
+            $rol = Rol::find($user->rol_id);
+            $user->rol()->associate($rol);
+        } 
+
+        
+        if(isset($user['branch_office_id']) && !$user['branch_office_id'] == null) {
+            $branch_office = BranchOffice::find($user->branch_office_id);
+            $user->branch_office()->associate($branch_office);
+        } 
+
+        if(isset($user['customer_id']) && !$user['customer_id'] == null) {
+            $customer = BranchOffice::find($user->customer_id);
+            $user->customer()->associate($customer_id);
+        } 
+        return $user;
     }
 
     /**

@@ -24,12 +24,26 @@ class User extends Authenticatable  implements JWTSubject
         
     }
 
-	public function rol_id()
-	{	
-		$rol = Rol::find($this->rol_id);
-
-		return $rol->nombre;
+    public function branch_office(){
+        //return $this->hasOne('App\Rol');
+        return $this->belongsTo(BranchOffice::class); 
+        
     }
+
+    public function customer(){
+        //return $this->hasOne('App\Rol');
+        return $this->belongsTo(Customer::class);
+        
+    }
+	// public function rol_id()
+	// {	$rol = new Rol();
+    //     // if(isset($this->rol_id) && $this->rol_id != null){
+    //         $rol = Rol::find($this->rol_id);
+    //     // }        
+        
+	// 	// return !isset($rol)  && $this->rol_id == null ? null : $rol->nombre;
+    //     return $rol->nombre;
+    // }
     
     public function getJWTIdentifier()
     {
