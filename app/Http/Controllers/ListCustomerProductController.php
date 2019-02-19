@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\ListCustomerProduct;
 use Illuminate\Http\Request;
+use App\Customer;
+use App\User;
 
 class ListCustomerProductController extends Controller
 {

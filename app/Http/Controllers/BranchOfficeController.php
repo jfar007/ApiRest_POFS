@@ -35,7 +35,7 @@ class BranchOfficeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+         
     }
 
     /**

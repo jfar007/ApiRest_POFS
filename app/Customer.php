@@ -17,4 +17,10 @@ class Customer extends Model
         return $this->belongsTo(Profile::class); 
         
     }
+
+    public function notificationsdays(){
+
+        return $this->belongsTo(NotificationsDays::class); 
+        
+    }
 }

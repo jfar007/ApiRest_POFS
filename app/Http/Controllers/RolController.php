@@ -12,11 +12,20 @@ class RolController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         //
         $rols=Rol::all();
-        return $rols; 
+        // return $rols; 
+
+        return response()->json([
+            'message' =>  'OK'
+            // ,'val' =>notification->toArray()
+            //  ,'notificationday' => $notificationday
+      
+             , 'values' => $rols
+             , $request->user()
+        ],$status =200);
     }
 
     /**

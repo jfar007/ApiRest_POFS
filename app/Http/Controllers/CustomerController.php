@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Customer;
 use Illuminate\Http\Request;
 use App\Profile;
+use App\NotificationsDays;
+use \Symfony\Component\HttpFoundation\ParameterBag;
+use Illuminate\Database\Eloquent\Collection;
+// use Illuminate\Contracts\Support\Arrayable;
 
 class CustomerController extends Controller
 {
@@ -16,13 +20,60 @@ class CustomerController extends Controller
     public function index()
     {
         $customers=Customer::all();
+        $data = ['message' =>  'Create Successfully', 'state' =>   '200' ];
+        $data += ['message2' =>  'Create Successfully2'];
 
         foreach ( $customers as $customer)
         {
-            $customer= $this->valideRelations($customer);   
-        }
-        return $customers;
-  
+          
+        //     $customer= $this->valideRelations($customer);   
+            // $notificationday = new ParameterBag( $customer->all()->get($customer->id)); 
+            $notification=NotificationsDays::where('customer_id', $customer->id)->first();
+            $parameters =  ['notificationsdays_id' => $notification['id']];
+
+
+        //     // $notificationday->add($parameters);
+
+            $customer->forcefill($parameters);
+           
+        //     $customer->fill($notificationday->all());
+        //     // $notificationday->notificacition_id = '3';
+                        $customer= $this->valideRelations($customer);   
+         }
+
+        //  return response()->json([
+        //     'message' =>  'OK'
+        //     ,'values' => $notification->toArray()
+        //     //  ,'notificationday' => $notificationday
+      
+        //      , 'customers' => $customer
+        //      , 'data' => $data 
+        // ],$status =210);
+
+
+        $data = ['message' =>  'Create Successfully', 'state' =>   '200' ];
+        $data += ['message2' =>  'Create Successfully2'];
+        // return $customers;
+
+        return response()->json([
+            'message' =>  'OK'
+            // ,'val' =>notification->toArray()
+            //  ,'notificationday' => $notificationday
+      
+             , 'values' => $customers
+        ],$status =210);
+
+
+        return response()->json(
+            $data 
+            // [
+            // 'message' =>  'Create Successfully'
+            // ,'state' =>   '200' 
+            // // ,'notificationday' => $notificationday
+            //  ,'customers' => $customers
+            // // , 'notification' => $notification
+            // ]
+        );
     }
 
     /**
@@ -45,12 +96,22 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
+
+        // $notificationday = new ParameterBag($request->toArray()); 
         $customer = Customer::create($request->all());
 
         $this->valideRelations($customer);
 
-        
-        return $customer;
+        $request['customer_id'] = $customer->id;
+        $notification =  NotificationsDays::create($request->all());
+        return response()->json([
+        'message' =>  'Create Successfully'
+        ,'state' =>   '200' 
+        // ,'notificationday' => $notificationday
+         ,'customer' => $customer
+        , 'notification' => $notification
+        ]);
+
     }
 
     /**
@@ -67,9 +128,16 @@ class CustomerController extends Controller
     
 
         $this->valideRelations($customer);
-     
         
-        return $customer;
+        $notification = NotificationsDays::where('customer_id', $customer->id)->first();
+        
+        return response()->json([
+            'message' =>  'Create Successfully'
+            ,'state' =>   '200' 
+            // ,'notificationday' => $notificationday
+             ,'customer' => $customer
+            , 'notification' => $notification
+            ]);
     }
 
     /**
@@ -129,6 +197,10 @@ class CustomerController extends Controller
         if(isset($customer['profile_id']) && !$customer['profile_id'] == null) {
             $profile = Profile::find($customer->profile_id);
             $customer->profile()->associate($profile);
+        } 
+        if(isset($customer['notificationsdays_id']) && !$customer['notificationsdays_id'] == null) {
+            $notification = NotificationsDays::find($customer->notificationsdays_id);
+            $customer->notificationsdays()->associate($notification);
         } 
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\NotificatiosDays;
+use App\NotificationsDays;
 use Illuminate\Http\Request;
 
-class NotificatiosDaysController extends Controller
+class NotificationsDaysController extends Controller
 {
     /**
      * Display a listing of the resource.
