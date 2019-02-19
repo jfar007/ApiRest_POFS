@@ -13,25 +13,22 @@ class User extends Authenticatable  implements JWTSubject
 
         protected $table =  'users';
         protected $fillable = array('username','password','name','email','branch_office','mobile_phone','landline','address','latitude_longitude_elevation'
-        ,'rol_id','customer_id','branch_office_id','confirmed','confirmation_code','active');
+        ,'rol_id','customer_id','branch_office_cf_id','confirmed','confirmation_code','active');
 
 
 
         
     public function rol(){
-        //return $this->hasOne('App\Rol');
         return $this->belongsTo(Rol::class); 
         
     }
 
-    public function branch_office(){
-        //return $this->hasOne('App\Rol');
+    public function branch_office_cf(){
         return $this->belongsTo(BranchOffice::class); 
         
     }
 
     public function customer(){
-        //return $this->hasOne('App\Rol');
         return $this->belongsTo(Customer::class);
         
     }

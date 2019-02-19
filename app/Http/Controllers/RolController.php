@@ -15,6 +15,8 @@ class RolController extends Controller
     public function index()
     {
         //
+        $rols=Rol::all();
+        return $rols; 
     }
 
     /**
@@ -44,9 +46,13 @@ class RolController extends Controller
      * @param  \App\Rol  $rol
      * @return \Illuminate\Http\Response
      */
-    public function show(Rol $rol)
+    public function show($id)
     {
-        //
+        $rol=Rol::where('id', $id)->first();
+        if(! $rol)
+            return abort(404);
+
+        return $rol; 
     }
 
     /**

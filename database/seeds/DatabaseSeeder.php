@@ -1,7 +1,12 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\Rol;
+// use App\Rol;
+// use App\Profile;
+// use App\Customer;
+// use App\BranchOffice;
+
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,33 +17,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
 
-            'active' => '1',
-        Rol::create([
-            'name' => 'Admin',
-            'active' => '1',
-        ]);
-        Rol::create([
-            'name' => 'Distribuidor',
-            'active' => '1',
-        ]);
-        Profile::create([
-            'name' => 'Perfil 1',
-            'active' => '1',
-        ]);
-
-        Profile::create([
-            'name' => 'Perfil 2',
-            'active' => '1',
-        ]);
-
-        Customer::create([
-            'name' => 'KFC',
-            'main_phone' => '7222254',
-            'main_address' => 'CC Iserra 100',
-            'profile_id' => '1',
-            'active' => '1',
-        ]);
+        $this->call(RolTableSeeder::class);
+        $this->call(ProfileTableSeeder::class);
+        $this->call(CustomerTableSeeder::class);
+        $this->call(BranchOfficeTableSeeder::class);
+        $this->call(UnitTableSeeder::class);
+        $this->call(CategoryTableSeeder::class);
+        $this->call(ProductTableSeeder::class);
+    
     }
 }

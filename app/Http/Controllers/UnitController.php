@@ -14,7 +14,8 @@ class UnitController extends Controller
      */
     public function index()
     {
-        //
+        $units = Unit::all();
+        return $units; 
     }
 
     /**
@@ -44,9 +45,13 @@ class UnitController extends Controller
      * @param  \App\Unit  $unit
      * @return \Illuminate\Http\Response
      */
-    public function show(Unit $unit)
+    public function show($id)
     {
-        //
+        $unit = Unit::where('id',$id)->first();
+        if(! $unit)
+            return abort(404); 
+            
+        return $unit; 
     }
 
     /**

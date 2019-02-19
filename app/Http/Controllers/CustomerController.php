@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Customer;
 use Illuminate\Http\Request;
+use App\Profile;
 
 class CustomerController extends Controller
 {
@@ -14,7 +15,14 @@ class CustomerController extends Controller
      */
     public function index()
     {
-        //
+        $customers=Customer::all();
+
+        foreach ( $customers as $customer)
+        {
+            $customer= $this->valideRelations($customer);   
+        }
+        return $customers;
+  
     }
 
     /**
@@ -24,7 +32,9 @@ class CustomerController extends Controller
      */
     public function create()
     {
-        //
+
+
+
     }
 
     /**
@@ -35,7 +45,12 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $customer = Customer::create($request->all());
+
+        $this->valideRelations($customer);
+
+        
+        return $customer;
     }
 
     /**
@@ -44,9 +59,17 @@ class CustomerController extends Controller
      * @param  \App\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function show(Customer $customer)
+    public function show($id)
     {
-        //
+        $customer=Customer::where('id', $id)->first();
+        if(! $customer)
+            return abort(404, 'Not Found');
+    
+
+        $this->valideRelations($customer);
+     
+        
+        return $customer;
     }
 
     /**
@@ -57,7 +80,8 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        //
+       
+        
     }
 
     /**
@@ -67,9 +91,19 @@ class CustomerController extends Controller
      * @param  \App\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Customer $customer)
+    public function update(Request $request,  $id)
     {
-        //
+        $customer=Customer::where('id', $id)->first();
+        if(! $customer)
+            return abort(404, 'Not Found');
+
+        $customer->fill($request->all())->save();
+
+        $this->valideRelations($customer);
+  
+        
+
+        return $customer;
     }
 
     /**
@@ -78,8 +112,23 @@ class CustomerController extends Controller
      * @param  \App\Customer  $customer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Customer $customer)
+    public function destroy($id)
     {
-        //
+        $customer=Customer::where('id', $id)->first();
+        if(! $customer)
+            return abort(404, 'Not Found');
+    
+        $customer->delete();
+        return $customer;
+    }
+
+
+    
+    public function valideRelations(Customer $customer)
+    {
+        if(isset($customer['profile_id']) && !$customer['profile_id'] == null) {
+            $profile = Profile::find($customer->profile_id);
+            $customer->profile()->associate($profile);
+        } 
     }
 }

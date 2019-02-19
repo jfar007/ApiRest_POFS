@@ -14,7 +14,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $categorys = Category::all();
+        return $categorys;
     }
 
     /**
@@ -24,7 +25,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+    
     }
 
     /**
@@ -44,9 +45,15 @@ class CategoryController extends Controller
      * @param  \App\Category  $category
      * @return \Illuminate\Http\Response
      */
-    public function show(Category $category)
+    public function show($id)
     {
-        //
+        $category = Category::where('id', $id)->first();
+        
+        if(! $category)
+            return abort(404);
+        
+
+        return $category;
     }
 
     /**

@@ -14,7 +14,8 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        //
+        $profiles = Profile::all();
+        return $profiles;
     }
 
     /**
@@ -44,9 +45,13 @@ class ProfileController extends Controller
      * @param  \App\Profile  $profile
      * @return \Illuminate\Http\Response
      */
-    public function show(Profile $profile)
+    public function show($id)
     {
-        //
+        $profile = Profile::where('id',$id)->first();
+        if(!$profile)
+            return abort(404);
+
+        return $profile;
     }
 
     /**
@@ -82,4 +87,5 @@ class ProfileController extends Controller
     {
         //
     }
+
 }

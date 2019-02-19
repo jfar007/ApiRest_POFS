@@ -32,8 +32,8 @@ class CreateUsersTable extends Migration
             $table->foreign('customer_id')
                     ->references('id')->on('customer')
                     ->onDelete('cascade');  
-            $table->unsignedInteger('branch_office_id')->nullable();        
-            $table->foreign('branch_office_id')
+            $table->unsignedInteger('branch_office_cf_id')->nullable();        
+            $table->foreign('branch_office_cf_id')
                     ->references('id')->on('branch_office')
                     ->onDelete('cascade');         
             $table->boolean('confirmed')->nullable()->default(0);

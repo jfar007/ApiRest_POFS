@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\User;
 use App\Rol;
+use App\BranchOffice;
+use App\Customer;
 use App\Mail\VerifyRegister;
 use Mail;
 use JWTAuth; 
@@ -27,8 +29,7 @@ class UserController extends Controller
         {
 
             $user= $this->valideRelations($user);
-    
-            $user->save();
+
         }
   
         return $Users;
@@ -76,11 +77,7 @@ class UserController extends Controller
         $user->password=bcrypt($passtemp);
         $user->save();
 
-   
-       if(isset($user['rol_id']) && !$user['rol_id'] == null) {
-            $rol = Rol::find($user->rol_id);
-            $user->rol()->associate($rol);
-        } 
+        $user = $this->valideRelations( $user);
    
 
        return $user; 
@@ -176,8 +173,11 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::where('id', $id)->first();
-        
-        $user = valideRelations($user);
+        if (! $user)
+            return abort(404, 'Not Found');// Si no tiene permisos
+        // return abort(403, 'Unauthorized action.');// Si no tiene permisos
+
+        $user = $this->valideRelations($user);
    
 
         return $user;
@@ -190,14 +190,14 @@ class UserController extends Controller
         } 
 
         
-        if(isset($user['branch_office_id']) && !$user['branch_office_id'] == null) {
-            $branch_office = BranchOffice::find($user->branch_office_id);
-            $user->branch_office()->associate($branch_office);
+        if(isset($user['branch_office_cf_id']) && !$user['branch_office_cf_id'] == null) {
+            $branch_office = BranchOffice::find($user->branch_office_cf_id);
+            $user->branch_office_cf()->associate($branch_office);
         } 
 
         if(isset($user['customer_id']) && !$user['customer_id'] == null) {
-            $customer = BranchOffice::find($user->customer_id);
-            $user->customer()->associate($customer_id);
+            $customer = Customer::find($user->customer_id);
+            $user->customer()->associate($customer);
         } 
         return $user;
     }
@@ -210,7 +210,8 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+
+   
     }
 
     /**
@@ -222,7 +223,14 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::where('id', $id)->first();
+        if (! $user)
+            return abort(404, 'Not Found');
+        
+        $user->fill($request->all())->save();
+
+       return $user; 
+
     }
 
     /**
@@ -233,6 +241,11 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::where('id', $id)->first();
+        if (! $user)
+            return abort(404, 'Not Found');
+            
+        $user->delete();
+        return $user;
     }
 }
