@@ -23,10 +23,10 @@ class CreatePurchaseOrderTable extends Migration
             $table->foreign('branch_office_id')
                     ->references('id')->on('branch_office')
                     ->onDelete('cascade');
-            $table->string('description',150)->nullable();; 
+            $table->string('description',150)->nullable(); 
             $table->double('total_quantity');
-            $table->string('purchase_order_number',100)->nullable();; 
-            $table->string('purchase_order_url',150)->nullable();; 
+            $table->string('purchase_order_number',100)->nullable(); 
+            $table->string('purchase_order_url',150)->nullable();
             $table->unsignedInteger('status_id');        
             $table->foreign('status_id')
                     ->references('id')->on('status')

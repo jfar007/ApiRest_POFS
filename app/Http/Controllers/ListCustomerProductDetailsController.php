@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\ListCustomerProductDetails;
 use Illuminate\Http\Request;
+use App\Product;
+use App\ListCustomerProduct;
+use Exception;
 
 class ListCustomerProductDetailsController extends Controller
 {
@@ -14,7 +17,7 @@ class ListCustomerProductDetailsController extends Controller
      */
     public function index()
     {
-        //
+            
     }
 
     /**
@@ -35,7 +38,35 @@ class ListCustomerProductDetailsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+
+            $data = json_decode($request->getContent(), true);
+            $first= true;
+            foreach($data['values'] as $lcd){
+                if($first){
+                    $listcts = ListCustomerProductDetails::where('list_customer_product_id',$lcd['list_customer_product_id'])->delete();
+                    $first = false;
+                }
+                $lcd = ListCustomerProductDetails::create($lcd);
+                $lcid = $lcd->list_customer_product_id;
+            }
+
+            $listcts = ListCustomerProductDetails::where('list_customer_product_id',$lcid)->get();
+            foreach($listcts as $listcd){
+                $this->valideRelations($listcd);
+            }
+
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+        $response['message'] = 'ok';
+         $response['values'] = $listcts;
+         $response['user_id'] = 'PD';
+         return response()->json($response,201);
     }
 
     /**
@@ -44,9 +75,16 @@ class ListCustomerProductDetailsController extends Controller
      * @param  \App\ListCustomerProductDetails  $listCustomerProductDetails
      * @return \Illuminate\Http\Response
      */
-    public function show(ListCustomerProductDetails $listCustomerProductDetails)
+    public function show($list_customer_product_id)
     {
-        //
+        $listcts = ListCustomerProductDetails::where('list_customer_product_id',$list_customer_product_id)->get();
+        foreach($listcts as $listcd){
+            $this->valideRelations($listcd);
+        }
+        $response['message'] = 'ok';
+        $response['values'] = $listcts;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -57,7 +95,7 @@ class ListCustomerProductDetailsController extends Controller
      */
     public function edit(ListCustomerProductDetails $listCustomerProductDetails)
     {
-        //
+      
     }
 
     /**
@@ -81,5 +119,18 @@ class ListCustomerProductDetailsController extends Controller
     public function destroy(ListCustomerProductDetails $listCustomerProductDetails)
     {
         //
+    }
+
+    public function valideRelations(ListCustomerProductDetails $listsCustomerdt)
+    {
+        
+        if(isset($listsCustomerdt['product_id']) && !$listsCustomerdt['product_id'] == null) {
+            $product = Product::find($listsCustomerdt->product_id);
+            $listsCustomerdt->product()->associate($product);
+        } 
+        if(isset($listsCustomerdt['list_customer_product_id']) && !$listsCustomerdt['list_customer_product_id'] == null) {
+            $lcp = ListCustomerProduct::find($listsCustomerdt->list_customer_product_id);
+            $listsCustomerdt->list_customer_product()->associate($lcp);
+        }
     }
 }

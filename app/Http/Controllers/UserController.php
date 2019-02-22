@@ -12,29 +12,33 @@ use Mail;
 use JWTAuth; 
 use Tymon\JWTAut\Exceptions\JWTException; 
 use \Symfony\Component\HttpFoundation\ParameterBag;
-use Illuminate\Support\Facades\Auth;
+// use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    private $section = 'user'; 
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+
         $Users=User::all();
 
         foreach ($Users as $user)
         {
-
             $user= $this->valideRelations($user);
-
         }
-  
-        return $Users;
+        
+        // return response()->json(compact('Users'),200);
+        $response['message'] = 'ok';
+        $response['values'] = $users;
+        $response['user_id'] = $user->id;
+       return response()->json($response,201);
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -59,11 +63,11 @@ class UserController extends Controller
         $name = $request['name'];
         $x = true;
         while($x) {
-                $username = 'FS'. substr($name, 0, 2) . str_random(4);            
+                $username = 'fs'. substr($name, 0, 2) . str_random(4);      
+                $username = strtolower($username);      
                 $user = User::where('username', $username)->first();
                 if (!$user)
-                    $x = false;                
-                
+                    $x = false;       
         }
         $parameters =  ['username' =>  $username,
                         'password' =>$passtemp ,
@@ -79,10 +83,108 @@ class UserController extends Controller
 
         $user = $this->valideRelations( $user);
    
-
-       return $user; 
+        // $token = JWTAuth::fromUser($user);
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = $user->id;
+       return response()->json($response,201);
    
 
+    }
+
+
+    public function getAuthenticatedUser()
+    {
+            try {
+
+                    if (! $user = JWTAuth::parseToken()->authenticate()) {
+                            return response()->json(['user_not_found'], 404);
+                    }
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+                    return response()->json(['token_expired'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+                    return response()->json(['token_invalid'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+                    return response()->json(['token_absent'], $e->getStatusCode());
+
+            }
+
+            return response()->json(compact('user'));
+    }
+
+
+    
+    public function getAuthenticatedUserpl(Request $request )
+    {
+           
+        try {
+
+            //JWTAuth::setToken('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTkyLjE2OC4yMzAuMTI4L2Zvb2Rzb2x1dGlvbnNscnYvcHVibGljL2FwaS91L2xnIiwiaWF0IjoxNTUwNjc5OTI2LCJleHAiOjE1NTA2ODM1MjYsIm5iZiI6MTU1MDY3OTkyNiwianRpIjoiRjVDUXYzYndBUkJ1bVNqMiIsInN1YiI6MywicHJ2IjoiODdlMGFmMWVmOWZkMTU4MTJmZGVjOTcxNTNhMTRlMGIwNDc1NDZhYSJ9.f1LUwCGqFIDp086uAcEHxathCEbwMhk_hFBzXZIDjm8');
+            $payload =JWTAuth::getPayload();
+            return response()->json(
+                [
+                    compact('payload')
+                 ,'request' => $request
+                ]);
+
+                    if (! $user = JWTAuth::parseToken()->authenticate()) {
+                            return response()->json(['user_not_found'], 404);
+                    }
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+                    return response()->json(['token_expired'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+                    return response()->json(['token_invalid'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+                    return response()->json(['token_absent'], $e->getStatusCode());
+
+            }
+            
+            return response()->json('msg');
+    }
+
+
+   
+
+       
+    public function getAuthenticatedUserInfo(Request $request)
+    {
+           
+        try {
+
+            $userrsp = JWTAuth::user();
+            return response()->json(compact('userrsp'));
+
+                    if (! $user = JWTAuth::parseToken()->authenticate()) {
+                            return response()->json(['user_not_found'], 404);
+                    }
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+                    return response()->json(['token_expired'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+                    return response()->json(['token_invalid'], $e->getStatusCode());
+
+            } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+                    return response()->json(['token_absent'], $e->getStatusCode());
+
+            }
+            
+            return response()->json('msg');
     }
 
 
@@ -92,14 +194,15 @@ class UserController extends Controller
         if (! $user)
             return abort(403, 'Unauthorized action.');
     
-        $user->confirmed = true;
+      
         $user->confirmation_code = null;
         $user->save();
     
         // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
         // return $user;
+     
 
-        return redirect('/');
+        return redirect(env('APP_PAG'));
     }
 
     public function resetpassword(Request $request){
@@ -116,7 +219,6 @@ class UserController extends Controller
         
         $user->password=bcrypt($passtemp);
         $user->confirmed = false;   
-        $user->confirmation_code = null;
         $user->save();
 
         // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
@@ -124,41 +226,74 @@ class UserController extends Controller
 
         return $user;
     }
-
+                     
     public function  authenticate(Request $request){
         
+
+     
         $user = User::where('username', $request['username'])->first();
 
-        if (! $user)
-            return abort(403, 'Unauthorized action.');
-        
-        $credentials = $request->only('username','password');
-    
-        try{
-            if(!$tocken = JWTAuth::attempt($credentials)){
-                return response()->json(['error' => 'credenciales invalidas'], 422);                
-            }
-        } catch (JWTExceptions $e){
-            return response()->json(['error' => 'credenciales invalidas'],  500); 
+        if (! $user){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
         }
+            
         
-        if ($user->confirmed==false && !isset( $user->confirmation_code))
-            $user->password=bcrypt($request['password_new']);
+     
+            
+        // $credentials = $request->only('username','password');
+    
+        // try{
+        //     if(!$tocken = JWTAuth::attempt($credentials)){
+        //         $response['message'] = 'error';
+        //         $response['values'] = ['error details' => 'invalid credentials','user' => $user];
+        //         $response['user_id'] = $user->id;
+        //         return response()->json($response,422);                
+        //     }
+        // } catch (JWTExceptions $e){
+        //     $response['message'] = 'error';
+        //     $response['values'] = ['error details' => 'invalid credentials','user' => $user];
+        //     $response['user_id'] = $user->id;
+        //     return response()->json($response,500);                 
+        // }
+        
+
+
+        if ($user->confirmed==false && !isset( $user->confirmation_code) && ($request['password_new'] == null ||  !isset($request['password_new']) )){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'Exist but requiere password_new','user' => $user];
+            $response['user_id'] = $user->id;
+            return response()->json($response,403);
+         
+        }elseif($user->confirmed==false && !isset( $user->confirmation_code)){
+            $user->password=bcrypt($request['password_new']);            
             $user->confirmed = true;   
             $user->save();
-
-
-        $userrsp = Auth::user();
-    
-        if(isset($userrsp->rol_id) && $userrsp->rol_id != null) {
-            $rol = Rol::find($userrsp->rol_id);
-            $userrsp->rol()->associate($rol);
-        } 
+            $response['message'] = 'ok';
+            $response['values'] = $user;
+            $response['user_id'] = $user->id;
+            return response()->json($response,200);
+        }
             
+        if(isset( $user->confirmation_code) && !$user->confirmation_code == null){
+            $response['message'] = 'error';
+            $response['values'] = ['details' => 'User no confirmed code','user' => $user];
+            $response['user_id'] = $user->id;
+            return response()->json($response,403);
+        }        
+
+        $userrsp = JWTAuth::user();
     
-        $response = compact('tocken');
-        $response['user'] = $userrsp;
-        return $response;
+        // $response = compact('tocken');
+        // $response['user'] = $userrsp;
+
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = $user->id;
+        return response()->json($response,200);
+
         // return  response()->json(['message' => 
         // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
 ;

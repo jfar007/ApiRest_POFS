@@ -43,6 +43,13 @@ class ListCustomerProductController extends Controller
      */
     public function store(Request $request)
     {
+            $user = $request->user();
+            if(! $user){
+                $request['users_lm_id'] = '1'; 
+            }else{
+                $request['users_lm_id'] =  $user->id;
+            }
+                
             $listsCustomer = ListCustomerProduct::create($request->all());
             $this->valideRelations($listsCustomer);
             return $listsCustomer;
@@ -59,7 +66,9 @@ class ListCustomerProductController extends Controller
         $listsCustomer = ListCustomerProduct::where('id', $id)->first();
         if(! $listsCustomer)
             return abort(404); 
+            
         $this->valideRelations($listsCustomer);
+        
         return $listsCustomer;
     }
 

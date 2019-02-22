@@ -21,7 +21,7 @@ class CreateListCustomerProductTable extends Migration
             $table->foreign('customer_id')
                     ->references('id')->on('customer')
                     ->onDelete('cascade');
-            $table->unsignedInteger('users_lm_id');
+            $table->unsignedInteger('users_lm_id')->nullable();
             $table->foreign('users_lm_id')
                     ->references('id')->on('users')
                     ->onDelete('cascade');

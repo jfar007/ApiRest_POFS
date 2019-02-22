@@ -21,14 +21,22 @@ Route::middleware(['jwt.auth'])->group(function(){
     Route::get('/r','RolController@index');//Get rols
     Route::get('/r/{id}','RolController@show');//Get rol
 });
+Route::group(['middleware' => ['jwt.auth']], function(){
+   
+    Route::get('/u/{id}','UserController@show');//Get users
+    Route::get('/uapl','UserController@getAuthenticatedUserpl');//Get users
+    Route::get('/ua','UserController@getAuthenticatedUser');//Get users
+    Route::get('/uainfo','UserController@getAuthenticatedUserInfo');//Get users
+    // Route::post('/lcp','ListCustomerProductController@store');//create ListCustomerProduct
+});
 
-
+Route::get('/u','UserController@index');//Get users
 Route::post('/u','UserController@store'); //Register
 Route::get('/u/verify/{code}','UserController@verify');//From email
 Route::post('/u/rp/email','UserController@resetpassword');//Reset password and sent new user password
 Route::post('/u/lg','UserController@authenticate'); //Login and reset password, use password_new but new password
 Route::get('/u','UserController@index');//Get users
-Route::get('/u/{id}','UserController@show');//Get users
+// Route::get('/u/{id}','UserController@show');//Get users
 Route::post('/u/{id}','UserController@update');//Get users
 Route::get('/u/d/{id}','UserController@destroy');//Get users
 
@@ -40,6 +48,14 @@ Route::get('/ct/{id}','CustomerController@show');//Get Customer
 Route::post('/ct','CustomerController@store');//create Customer
 Route::post('/ct/{id}','CustomerController@update');//Update Customer
 Route::get('/ct/d/{id}','CustomerController@destroy');//Delete Customer
+
+Route::get('/bo','BranchOfficeController@index');//Get BranchOffice
+Route::get('/bo/{id}','BranchOfficeController@show');//Get BranchOffice
+Route::get('/bo/ct/{id}','BranchOfficeController@showboct');//Get BranchOffice
+Route::post('/bo','BranchOfficeController@store');//create BranchOffice
+Route::post('/bo/{id}','BranchOfficeController@update');//Update BranchOffice
+Route::get('/bo/d/{id}','BranchOfficeController@destroy');//Delete BranchOffice
+
 
 Route::get('/pf','ProfileController@index');//Get profiles
 Route::get('/pf/{id}','ProfileController@show');//Get profile
@@ -62,6 +78,11 @@ Route::get('/lcp/{id}','ListCustomerProductController@show');//Get ListCustomerP
 Route::post('/lcp','ListCustomerProductController@store');//create ListCustomerProduct
 Route::post('/lcp/{id}','ListCustomerProductController@update');//Update ListCustomerProduct
 Route::get('/lcp/d/{id}','ListCustomerProductController@destroy');//Delete ListCustomerProduct
+
+
+Route::post('/lcpdt','ListCustomerProductDetailsController@store');//Create and Edit ListCustomerProductdetails
+Route::get('/lcpdt/{list_customer_product_id}','ListCustomerProductDetailsController@show');//Get ListCustomerProductdetails from list_customer_product_id
+
 
 
 

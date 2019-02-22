@@ -19,6 +19,5 @@ class CustomerTableSeeder extends Seeder
             'profile_id' => '1',
             'active' => '1',
         ]);
-
     }
 }

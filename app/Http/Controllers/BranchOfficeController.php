@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\BranchOffice;
+use App\Customer;
 use Illuminate\Http\Request;
 
 class BranchOfficeController extends Controller
@@ -15,6 +16,12 @@ class BranchOfficeController extends Controller
     public function index()
     {
         //
+        $branchOffices= BranchOffice::all();
+        foreach($branchOffices as $branchOffice){
+            $this->valideRelations($branchOffice);
+        }
+
+        return $branchOffices;
     }
 
     /**
@@ -35,7 +42,9 @@ class BranchOfficeController extends Controller
      */
     public function store(Request $request)
     {
-         
+      $branchOffice =   BranchOffice::create($request->all());
+      $this->valideRelations($branchOffice);
+      return   $branchOffice;
     }
 
     /**
@@ -44,9 +53,28 @@ class BranchOfficeController extends Controller
      * @param  \App\BranchOffice  $branchOffice
      * @return \Illuminate\Http\Response
      */
-    public function show(BranchOffice $branchOffice)
+    public function show($id)
     {
-        //
+        $branchOffice = BranchOffice::where('id', $id)->first();
+        if(! $branchOffice)
+            return abort(404);
+
+        $this->valideRelations($branchOffice);
+        return   $branchOffice; 
+    }
+
+
+    public function showboct($id)
+    {
+        $branchOffices = BranchOffice::where('customer_id', $id)->get();
+        if(! $branchOffices)
+            return abort(404);
+
+        foreach($branchOffices as $branchOffice){
+            $this->valideRelations($branchOffice);
+        }
+
+        return   $branchOffices; 
     }
 
     /**
@@ -57,7 +85,7 @@ class BranchOfficeController extends Controller
      */
     public function edit(BranchOffice $branchOffice)
     {
-        //
+            
     }
 
     /**
@@ -67,10 +95,17 @@ class BranchOfficeController extends Controller
      * @param  \App\BranchOffice  $branchOffice
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, BranchOffice $branchOffice)
+    public function update(Request $request, $id)
     {
-        //
+        $branchOffice =   BranchOffice::where('id', $id)->first();
+        if(! $branchOffice)
+            return abort(404);
+        
+        $branchOffice->fill($request->all())->save();
+        $this->valideRelations($branchOffice);
+        return   $branchOffice; 
     }
+    
 
     /**
      * Remove the specified resource from storage.
@@ -78,8 +113,21 @@ class BranchOfficeController extends Controller
      * @param  \App\BranchOffice  $branchOffice
      * @return \Illuminate\Http\Response
      */
-    public function destroy(BranchOffice $branchOffice)
+    public function destroy($id)
     {
-        //
+        $branchOffice =   BranchOffice::where('id', $id)->first();
+        if(! $branchOffice)
+            return abort(404);
+        
+        $branchOffice->delete();
+        return $branchOffice;    
+    }
+
+    public function valideRelations(BranchOffice $branchoffice)
+    {
+        if(isset($branchoffice['customer_id']) && !$branchoffice['customer_id'] == null) {
+            $custumer = Customer::find($branchoffice->customer_id);
+            $branchoffice->customer()->associate($custumer);
+        } 
     }
 }
