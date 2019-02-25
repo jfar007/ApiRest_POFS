@@ -14,6 +14,7 @@ use Tymon\JWTAut\Exceptions\JWTException;
 use \Symfony\Component\HttpFoundation\ParameterBag;
 // use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+Use Exception;
 
 class UserController extends Controller
 {
@@ -35,8 +36,8 @@ class UserController extends Controller
         
         // return response()->json(compact('Users'),200);
         $response['message'] = 'ok';
-        $response['values'] = $users;
-        $response['user_id'] = $user->id;
+        $response['values'] = $Users;
+        $response['user_id'] = 'PD';
        return response()->json($response,201);
     }
     /**
@@ -57,8 +58,10 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $userpr = new ParameterBag($request->toArray()); 
+    
+    try{
 
+        $userpr = new ParameterBag($request->toArray()); 
         $passtemp = str_random(10);
         $name = $request['name'];
         $x = true;
@@ -82,17 +85,282 @@ class UserController extends Controller
         $user->save();
 
         $user = $this->valideRelations( $user);
+
+    } catch (Exception $e) {
+        $response['message'] = 'error';
+        $response['values'] = ['error details' => $e->getMessage()];
+        $response['user_id'] = 'PD';
+        return response()->json($response,415);
+    }
    
-        // $token = JWTAuth::fromUser($user);
-        $response['message'] = 'ok';
-        $response['values'] = $user;
-        $response['user_id'] = $user->id;
-       return response()->json($response,201);
-   
+         $response['message'] = 'ok';
+         $response['values'] = $user;
+         $response['user_id'] = 'PD';
+         return response()->json($response,201);
+
 
     }
 
 
+
+    public function verify($code){
+
+        try{
+        $user = User::where('confirmation_code', $code)->first();
+
+        if (! $user){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+      
+        $user->confirmation_code = null;
+        $user->save();
+    
+        // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
+        // return $user;
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        return redirect(env('APP_PAG'));
+    }
+
+    public function resetpassword(Request $request){
+        try{
+            $user = User::where('email', $request['email'])->first();
+
+            if (! $user){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
+    
+            $register = 0;
+            $passtemp = str_random(10);
+
+            $user->password= $passtemp;        
+            Mail::to($user->email)->send(new VerifyRegister($user, $register));
+            
+            $user->password=bcrypt($passtemp);
+            $user->confirmed = false;   
+            $user->save();
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+        // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
+        // return $user;
+        
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+    }
+                     
+    public function  authenticate(Request $request){
+        
+
+        try{
+            $user = User::where('username', $request['username'])->first();
+
+            if (! $user){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
+                
+            
+        
+                
+            $credentials = $request->only('username','password');
+        
+            try{
+                if(!$tocken = JWTAuth::attempt($credentials)){
+                    $response['message'] = 'error';
+                    $response['values'] = ['error details' => 'invalid credentials','user' => $user];
+                    $response['user_id'] = $user->id;
+                    return response()->json($response,422);                
+                }
+            } catch (JWTExceptions $e){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'invalid credentials','user' => $user];
+                $response['user_id'] = $user->id;
+                return response()->json($response,500);                 
+            }
+            
+
+
+            if ($user->confirmed==false && !isset( $user->confirmation_code) && ($request['password_new'] == null ||  !isset($request['password_new']) )){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'Exist but requiere password_new','user' => $user];
+                $response['user_id'] = $user->id;
+                return response()->json($response,403);
+            
+            }elseif($user->confirmed==false && !isset( $user->confirmation_code)){
+                $user->password=bcrypt($request['password_new']);            
+                $user->confirmed = true;   
+                $user->save();
+                $response['message'] = 'ok';
+                $response['values'] = $user;
+                $response['user_id'] = $user->id;
+                return response()->json($response,200);
+            }
+                
+            if(isset( $user->confirmation_code) && !$user->confirmation_code == null){
+                $response['message'] = 'error';
+                $response['values'] = ['details' => 'User no confirmed code','user' => $user];
+                $response['user_id'] = $user->id;
+                return response()->json($response,403);
+            }        
+
+            $userrsp = JWTAuth::user();
+        
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+        // $response = compact('tocken');
+        // $response['user'] = $userrsp;
+
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
+        // return  response()->json(['message' => 
+        // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
+;
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $user = User::where('id', $id)->first();
+        if (! $user){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+
+        $user = $this->valideRelations($user);
+   
+        
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
+    }
+
+    public function valideRelations(User $user){
+        if(isset($user['rol_id']) && !$user['rol_id'] == null) {
+            $rol = Rol::find($user->rol_id);
+            $user->rol()->associate($rol);
+        } 
+
+        
+        if(isset($user['branch_office_cf_id']) && !$user['branch_office_cf_id'] == null) {
+            $branch_office = BranchOffice::find($user->branch_office_cf_id);
+            $user->branch_office_cf()->associate($branch_office);
+        } 
+
+        if(isset($user['customer_id']) && !$user['customer_id'] == null) {
+            $customer = Customer::find($user->customer_id);
+            $user->customer()->associate($customer);
+        } 
+        return $user;
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+
+   
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+
+        try{
+            $user = User::where('id', $id)->first();
+            if (! $user){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
+            
+            $user->fill($request->all())->save();
+
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $user = User::where('id', $id)->first();
+        if (! $user){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+            
+        $user->delete();
+
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+    }
+
+
+    
     public function getAuthenticatedUser()
     {
             try {
@@ -187,200 +455,4 @@ class UserController extends Controller
             return response()->json('msg');
     }
 
-
-    public function verify($code){
-        $user = User::where('confirmation_code', $code)->first();
-
-        if (! $user)
-            return abort(403, 'Unauthorized action.');
-    
-      
-        $user->confirmation_code = null;
-        $user->save();
-    
-        // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
-        // return $user;
-     
-
-        return redirect(env('APP_PAG'));
-    }
-
-    public function resetpassword(Request $request){
-        $user = User::where('email', $request['email'])->first();
-
-        if (! $user)
-            return abort(403, 'Unauthorized action.');
-   
-        $register = 0;
-        $passtemp = str_random(10);
-
-        $user->password= $passtemp;        
-        Mail::to($user->email)->send(new VerifyRegister($user, $register));
-        
-        $user->password=bcrypt($passtemp);
-        $user->confirmed = false;   
-        $user->save();
-
-        // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
-        // return $user;
-
-        return $user;
-    }
-                     
-    public function  authenticate(Request $request){
-        
-
-     
-        $user = User::where('username', $request['username'])->first();
-
-        if (! $user){
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => 'No exist'];
-            $response['user_id'] = null;
-            return response()->json($response,404);
-        }
-            
-        
-     
-            
-        // $credentials = $request->only('username','password');
-    
-        // try{
-        //     if(!$tocken = JWTAuth::attempt($credentials)){
-        //         $response['message'] = 'error';
-        //         $response['values'] = ['error details' => 'invalid credentials','user' => $user];
-        //         $response['user_id'] = $user->id;
-        //         return response()->json($response,422);                
-        //     }
-        // } catch (JWTExceptions $e){
-        //     $response['message'] = 'error';
-        //     $response['values'] = ['error details' => 'invalid credentials','user' => $user];
-        //     $response['user_id'] = $user->id;
-        //     return response()->json($response,500);                 
-        // }
-        
-
-
-        if ($user->confirmed==false && !isset( $user->confirmation_code) && ($request['password_new'] == null ||  !isset($request['password_new']) )){
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => 'Exist but requiere password_new','user' => $user];
-            $response['user_id'] = $user->id;
-            return response()->json($response,403);
-         
-        }elseif($user->confirmed==false && !isset( $user->confirmation_code)){
-            $user->password=bcrypt($request['password_new']);            
-            $user->confirmed = true;   
-            $user->save();
-            $response['message'] = 'ok';
-            $response['values'] = $user;
-            $response['user_id'] = $user->id;
-            return response()->json($response,200);
-        }
-            
-        if(isset( $user->confirmation_code) && !$user->confirmation_code == null){
-            $response['message'] = 'error';
-            $response['values'] = ['details' => 'User no confirmed code','user' => $user];
-            $response['user_id'] = $user->id;
-            return response()->json($response,403);
-        }        
-
-        $userrsp = JWTAuth::user();
-    
-        // $response = compact('tocken');
-        // $response['user'] = $userrsp;
-
-        $response['message'] = 'ok';
-        $response['values'] = $user;
-        $response['user_id'] = $user->id;
-        return response()->json($response,200);
-
-        // return  response()->json(['message' => 
-        // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
-;
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        $user = User::where('id', $id)->first();
-        if (! $user)
-            return abort(404, 'Not Found');// Si no tiene permisos
-        // return abort(403, 'Unauthorized action.');// Si no tiene permisos
-
-        $user = $this->valideRelations($user);
-   
-
-        return $user;
-    }
-
-    public function valideRelations(User $user){
-        if(isset($user['rol_id']) && !$user['rol_id'] == null) {
-            $rol = Rol::find($user->rol_id);
-            $user->rol()->associate($rol);
-        } 
-
-        
-        if(isset($user['branch_office_cf_id']) && !$user['branch_office_cf_id'] == null) {
-            $branch_office = BranchOffice::find($user->branch_office_cf_id);
-            $user->branch_office_cf()->associate($branch_office);
-        } 
-
-        if(isset($user['customer_id']) && !$user['customer_id'] == null) {
-            $customer = Customer::find($user->customer_id);
-            $user->customer()->associate($customer);
-        } 
-        return $user;
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-
-   
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        $user = User::where('id', $id)->first();
-        if (! $user)
-            return abort(404, 'Not Found');
-        
-        $user->fill($request->all())->save();
-
-       return $user; 
-
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $user = User::where('id', $id)->first();
-        if (! $user)
-            return abort(404, 'Not Found');
-            
-        $user->delete();
-        return $user;
-    }
 }

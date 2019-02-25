@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\BranchOffice;
 use App\Customer;
 use Illuminate\Http\Request;
+Use Exception;
+
 
 class BranchOfficeController extends Controller
 {
@@ -15,13 +17,16 @@ class BranchOfficeController extends Controller
      */
     public function index()
     {
-        //
+        
         $branchOffices= BranchOffice::all();
         foreach($branchOffices as $branchOffice){
             $this->valideRelations($branchOffice);
         }
 
-        return $branchOffices;
+        $response['message'] = 'ok';
+        $response['values'] = $branchOffices;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -44,7 +49,12 @@ class BranchOfficeController extends Controller
     {
       $branchOffice =   BranchOffice::create($request->all());
       $this->valideRelations($branchOffice);
-      return   $branchOffice;
+
+      $response['message'] = 'ok';
+      $response['values'] = $branchOffice;
+      $response['user_id'] = 'PD';
+      return response()->json($response,201);
+
     }
 
     /**
@@ -55,26 +65,44 @@ class BranchOfficeController extends Controller
      */
     public function show($id)
     {
+
         $branchOffice = BranchOffice::where('id', $id)->first();
-        if(! $branchOffice)
-            return abort(404);
+        if(! $branchOffice){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
         $this->valideRelations($branchOffice);
-        return   $branchOffice; 
+
+        $response['message'] = 'ok';
+        $response['values'] = $branchOffice;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
 
     public function showboct($id)
     {
         $branchOffices = BranchOffice::where('customer_id', $id)->get();
-        if(! $branchOffices)
-            return abort(404);
+        if(! $branchOffices){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
         foreach($branchOffices as $branchOffice){
             $this->valideRelations($branchOffice);
         }
 
-        return   $branchOffices; 
+        $response['message'] = 'ok';
+        $response['values'] = $branchOffices;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**
@@ -97,13 +125,30 @@ class BranchOfficeController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $branchOffice =   BranchOffice::where('id', $id)->first();
-        if(! $branchOffice)
-            return abort(404);
-        
-        $branchOffice->fill($request->all())->save();
-        $this->valideRelations($branchOffice);
-        return   $branchOffice; 
+
+        try{
+            $branchOffice =   BranchOffice::where('id', $id)->first();
+            if(! $branchOffice){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
+            
+            $branchOffice->fill($request->all())->save();
+            $this->valideRelations($branchOffice);
+
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        $response['message'] = 'ok';
+        $response['values'] = $branchOffice;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
     
 
@@ -115,12 +160,22 @@ class BranchOfficeController extends Controller
      */
     public function destroy($id)
     {
-        $branchOffice =   BranchOffice::where('id', $id)->first();
-        if(! $branchOffice)
-            return abort(404);
         
+        $branchOffice =   BranchOffice::where('id', $id)->first();
+        if(! $branchOffice){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+
         $branchOffice->delete();
-        return $branchOffice;    
+
+        $response['message'] = 'ok';
+        $response['values'] = $branchOffice;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+ 
     }
 
     public function valideRelations(BranchOffice $branchoffice)

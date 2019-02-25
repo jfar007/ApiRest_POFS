@@ -15,7 +15,12 @@ class UnitController extends Controller
     public function index()
     {
         $units = Unit::all();
-        return $units; 
+
+            
+        $response['message'] = 'ok';
+        $response['values'] = $units;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -48,10 +53,18 @@ class UnitController extends Controller
     public function show($id)
     {
         $unit = Unit::where('id',$id)->first();
-        if(! $unit)
-            return abort(404); 
-            
-        return $unit; 
+        if(! $unit){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+    
+        $response['message'] = 'ok';
+        $response['values'] = $unit;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+        
     }
 
     /**

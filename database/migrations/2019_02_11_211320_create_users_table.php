@@ -40,7 +40,6 @@ class CreateUsersTable extends Migration
             $table->string('confirmation_code')->nullable();
             $table->boolean('active')->default(false);
             $table->timestamps();
-
         });
     }
 

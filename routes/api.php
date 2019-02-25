@@ -18,17 +18,24 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['jwt.auth'])->group(function(){
-    Route::get('/r','RolController@index');//Get rols
-    Route::get('/r/{id}','RolController@show');//Get rol
+   
 });
 Route::group(['middleware' => ['jwt.auth']], function(){
    
-    Route::get('/u/{id}','UserController@show');//Get users
-    Route::get('/uapl','UserController@getAuthenticatedUserpl');//Get users
-    Route::get('/ua','UserController@getAuthenticatedUser');//Get users
-    Route::get('/uainfo','UserController@getAuthenticatedUserInfo');//Get users
-    // Route::post('/lcp','ListCustomerProductController@store');//create ListCustomerProduct
+ 
+    
 });
+
+//Requieren TOKEN
+Route::get('/u/{id}','UserController@show');//Get users
+//Route::get('/uapl','UserController@getAuthenticatedUserpl');//Get users
+//Route::get('/ua','UserController@getAuthenticatedUser');//Get users
+//Route::get('/uainfo','UserController@getAuthenticatedUserInfo');//Get users
+
+//Requieren TOKEN
+Route::get('/r','RolController@index');//Get rols
+Route::get('/r/{id}','RolController@show');//Get rol
+
 
 Route::get('/u','UserController@index');//Get users
 Route::post('/u','UserController@store'); //Register
@@ -80,9 +87,14 @@ Route::post('/lcp/{id}','ListCustomerProductController@update');//Update ListCus
 Route::get('/lcp/d/{id}','ListCustomerProductController@destroy');//Delete ListCustomerProduct
 
 
-Route::post('/lcpdt','ListCustomerProductDetailsController@store');//Create and Edit ListCustomerProductdetails
+Route::post('/lcpdt','ListCustomerProductDetailsController@store');//Create one ListCustomerProductdetails
+Route::post('/lcpdtjson','ListCustomerProductDetailsController@storeJson');//Create and Edit ListCustomerProductdetails 
 Route::get('/lcpdt/{list_customer_product_id}','ListCustomerProductDetailsController@show');//Get ListCustomerProductdetails from list_customer_product_id
+Route::post('/lcpdt/{id}','ListCustomerProductDetailsController@update');//Edit ListCustomerProductdetails 
+Route::get('/lcpdt/d/{id}','ListCustomerProductDetailsController@destroy');//Get ListCustomerProductdetails from list_customer_product_id
 
+
+Route::post('/po','PurchaseOrderController@store');//Create one ListCustomerProductdetails
 
 
 

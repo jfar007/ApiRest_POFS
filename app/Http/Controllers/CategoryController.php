@@ -15,7 +15,12 @@ class CategoryController extends Controller
     public function index()
     {
         $categorys = Category::all();
-        return $categorys;
+                    
+        $response['message'] = 'ok';
+        $response['values'] = $categorys;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**
@@ -49,11 +54,17 @@ class CategoryController extends Controller
     {
         $category = Category::where('id', $id)->first();
         
-        if(! $category)
-            return abort(404);
-        
+        if(! $category){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+        $response['message'] = 'ok';
+        $response['values'] = $category;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
 
-        return $category;
     }
 
     /**

@@ -22,11 +22,23 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        foreach($products as $product){
-            $product = $this->valideRelations($product);
+        try{
+            $products = Product::all();
+            foreach($products as $product){
+                $product = $this->valideRelations($product);
+            }
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
         }
-        return $products;
+
+        $response['message'] = 'ok';
+        $response['values'] = $products;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**
@@ -47,12 +59,15 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-
+        try{    
             $validator = Validator::make($request->all(), [
                 'picture' => 'image|mimes:jpg,jpeg,png,gif|max:2048']);            
 
             if ($validator->fails()) {
-                return  response()->json(['error' => $validator->errors()]);
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $validator->errors()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
             }
             if(isset($request['picture'])){
                 $image = $request->file('picture');
@@ -64,8 +79,19 @@ class ProductController extends Controller
 
             $product= Product::create($request->all());
             $this->valideRelations($product);
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
 
-            return  $product;
+            
+        $response['message'] = 'ok';
+        $response['values'] = $product;
+        $response['user_id'] = 'PD';
+        return response()->json($response,201);
+
     }
 
     /**
@@ -77,8 +103,18 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::where('id', $id)->first();
+        if(! $product){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
         $this->valideRelations($product);
-        return $product;
+        
+        $response['message'] = 'ok';
+        $response['values'] = $product;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -101,16 +137,26 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+
+     try{
         $product=Product::where('id', $id)->first();
-        if(! $product)
-            return abort(404);
+        if(! $product){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
         $validator = Validator::make($request->all(), [
             'picture' => 'image|mimes:jpg,jpeg,png,gif|max:2048']);            
 
-        if ($validator->fails()) {
-            return  response()->json(['error' => $validator->errors()]);
+        if ($validator->fails()) {         
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $validator->errors()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
         }
+
         if(isset($request['picture'])){
             $image = $request->file('picture');
             $input['imagename'] = time() . '.' . $image->getClientOriginalExtension();
@@ -123,7 +169,17 @@ class ProductController extends Controller
 
         $this->valideRelations($product);
 
-        return  $product;
+    }  catch (Exception $e) {
+        $response['message'] = 'error';
+        $response['values'] = ['error details' => $e->getMessage()];
+        $response['user_id'] = 'PD';
+        return response()->json($response,415);
+    }
+
+        $response['message'] = 'ok';
+        $response['values'] = $product;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -135,12 +191,19 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product=Product::where('id', $id)->first();
-        if(! $product)
-            return abort(404);
+        if(! $product){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
         $product->delete();
-        return $product;
-             
+
+        $response['message'] = 'ok';
+        $response['values'] = $product;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);             
     }
 
     public function valideRelations(Product $product)

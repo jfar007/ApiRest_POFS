@@ -15,7 +15,12 @@ class ProfileController extends Controller
     public function index()
     {
         $profiles = Profile::all();
-        return $profiles;
+
+        $response['message'] = 'ok';
+        $response['values'] = $profiles;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**
@@ -48,10 +53,18 @@ class ProfileController extends Controller
     public function show($id)
     {
         $profile = Profile::where('id',$id)->first();
-        if(!$profile)
-            return abort(404);
+        if(!$profile){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
-        return $profile;
+        $response['message'] = 'ok';
+        $response['values'] = $profile;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**

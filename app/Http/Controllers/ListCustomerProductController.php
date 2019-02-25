@@ -6,6 +6,7 @@ use App\ListCustomerProduct;
 use Illuminate\Http\Request;
 use App\Customer;
 use App\User;
+Use Exception;
 
 class ListCustomerProductController extends Controller
 {
@@ -16,12 +17,26 @@ class ListCustomerProductController extends Controller
      */
     public function index()
     {
-       $listsCustomers = ListCustomerProduct::all();
+        try{
+            
+            $listsCustomers = ListCustomerProduct::all();
 
-       foreach($listsCustomers as $listsCustomer){
-            $listsCustomer = $this->valideRelations($listsCustomer);
-       }
-       return $listsCustomers;
+            foreach($listsCustomers as $listsCustomer){
+                $listsCustomer = $this->valideRelations($listsCustomer);
+            }
+
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        $response['message'] = 'ok';
+        $response['values'] = $listsCustomers;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
     
 
@@ -43,6 +58,9 @@ class ListCustomerProductController extends Controller
      */
     public function store(Request $request)
     {
+
+         
+        try{
             $user = $request->user();
             if(! $user){
                 $request['users_lm_id'] = '1'; 
@@ -52,7 +70,18 @@ class ListCustomerProductController extends Controller
                 
             $listsCustomer = ListCustomerProduct::create($request->all());
             $this->valideRelations($listsCustomer);
-            return $listsCustomer;
+
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        $response['message'] = 'ok';
+        $response['values'] = $listsCustomer;
+        $response['user_id'] = 'PD';
+        return response()->json($response,201);
     }
 
     /**
@@ -63,13 +92,28 @@ class ListCustomerProductController extends Controller
      */
     public function show($id)
     {
-        $listsCustomer = ListCustomerProduct::where('id', $id)->first();
-        if(! $listsCustomer)
-            return abort(404); 
-            
-        $this->valideRelations($listsCustomer);
+        try{
+            $listsCustomer = ListCustomerProduct::where('id', $id)->first();
+            if(! $listsCustomer){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
+                
+            $this->valideRelations($listsCustomer);
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        $response['message'] = 'ok';
+        $response['values'] = $listsCustomer;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
         
-        return $listsCustomer;
     }
 
     /**
@@ -92,12 +136,29 @@ class ListCustomerProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $listsCustomer = ListCustomerProduct::where('id', $id)->first();
-        if(! $listsCustomer)
-            return abort(404);
+       try{
+            $listsCustomer = ListCustomerProduct::where('id', $id)->first();
+            if(! $listsCustomer){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = null;
+                return response()->json($response,404);
+            }
 
-        $listsCustomer->fill($request->all())->save();  
-        return $listsCustomer;
+            $listsCustomer->fill($request->all())->save();  
+
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+    
+        $response['message'] = 'ok';
+        $response['values'] = $listsCustomer;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+    
     }
 
     /**
@@ -109,11 +170,20 @@ class ListCustomerProductController extends Controller
     public function destroy(ListCustomerProduct $listCustomerProduct)
     {
         $listsCustomer = ListCustomerProduct::where('id', $id)->first();
-        if(! $listsCustomer)
-            return abort(404);
+        if(! $listsCustomer){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
 
         $listsCustomer->delete();
-        return $listsCustomer;
+
+        $response['message'] = 'ok';
+        $response['values'] = $listsCustomer;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     public function valideRelations(ListCustomerProduct $listsCustomer)

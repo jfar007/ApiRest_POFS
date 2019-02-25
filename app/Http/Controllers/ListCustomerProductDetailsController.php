@@ -36,11 +36,9 @@ class ListCustomerProductDetailsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function storeJson(Request $request)
     {
         try {
-
-
             $data = json_decode($request->getContent(), true);
             $first= true;
             foreach($data['values'] as $lcd){
@@ -69,6 +67,25 @@ class ListCustomerProductDetailsController extends Controller
          return response()->json($response,201);
     }
 
+    public function store(Request $request)
+    {
+        try {
+
+            $lcd = ListCustomerProductDetails::create($request);
+            $this->valideRelations($lcd);
+
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+        $response['message'] = 'ok';
+         $response['values'] = $lcd;
+         $response['user_id'] = 'PD';
+         return response()->json($response,201);
+    }
+
     /**
      * Display the specified resource.
      *
@@ -78,6 +95,14 @@ class ListCustomerProductDetailsController extends Controller
     public function show($list_customer_product_id)
     {
         $listcts = ListCustomerProductDetails::where('list_customer_product_id',$list_customer_product_id)->get();
+       
+        if(! $listcts){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+
         foreach($listcts as $listcd){
             $this->valideRelations($listcd);
         }
@@ -93,7 +118,7 @@ class ListCustomerProductDetailsController extends Controller
      * @param  \App\ListCustomerProductDetails  $listCustomerProductDetails
      * @return \Illuminate\Http\Response
      */
-    public function edit(ListCustomerProductDetails $listCustomerProductDetails)
+    public function edit($request)
     {
       
     }
@@ -105,10 +130,34 @@ class ListCustomerProductDetailsController extends Controller
      * @param  \App\ListCustomerProductDetails  $listCustomerProductDetails
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ListCustomerProductDetails $listCustomerProductDetails)
+    public function update(Request $request, $id)
     {
-        //
+        
+        try{
+            $listcts = ListCustomerProductDetails::where('id',$id)->first();
+            if(! $listcts){
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'No exist'];
+                $response['user_id'] = 'PD';
+                return response()->json($response,404);
+            }
+            $listcts->fill($listcts->all())->save();
+
+        } catch (Exception $e) {
+        
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $e->getMessage()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+        }
+        
+        $response['message'] = 'ok';
+        $response['values'] = $listcts;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -116,9 +165,23 @@ class ListCustomerProductDetailsController extends Controller
      * @param  \App\ListCustomerProductDetails  $listCustomerProductDetails
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ListCustomerProductDetails $listCustomerProductDetails)
+    public function destroy($id)
     {
-        //
+        
+        try{
+            $listcts = ListCustomerProductDetails::where('id',$id)->delete();
+        } catch (Exception $e) {
+            $response['message'] = 'error';
+                $response['values'] = ['error details' => $e->getMessage()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+        }
+                  
+        $response['message'] = 'ok';
+        $response['values'] = $listcts;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     public function valideRelations(ListCustomerProductDetails $listsCustomerdt)

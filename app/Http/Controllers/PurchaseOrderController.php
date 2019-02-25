@@ -24,8 +24,11 @@ class PurchaseOrderController extends Controller
      */
     public function create()
     {
-        //
+        
+        
     }
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -35,7 +38,14 @@ class PurchaseOrderController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $day = $this->know_day(date("Y-m-d"));
+
+        // $day = $this->saber_dia('2020-01-01');
+        $response['message'] = 'ok';
+        $response['values'] = $day;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
@@ -82,4 +92,14 @@ class PurchaseOrderController extends Controller
     {
         //
     }
+
+    function know_day($dateinput) {
+        $days = array('Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado');
+        $dateout = $days[date('N', strtotime($dateinput))];
+        //echo $fecha;
+        return $dateout;
+        }
+
+        
+        
 }

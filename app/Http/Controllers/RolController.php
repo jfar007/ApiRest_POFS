@@ -14,18 +14,12 @@ class RolController extends Controller
      */
     public function index(Request $request)
     {
-        //
         $rols=Rol::all();
-        // return $rols; 
+        $response['message'] = 'ok';
+        $response['values'] = $rols;
+        $response['user_id'] = 'PD';
+       return response()->json($response,200);
 
-        return response()->json([
-            'message' =>  'OK'
-            // ,'val' =>notification->toArray()
-            //  ,'notificationday' => $notificationday
-      
-             , 'values' => $rols
-             , $request->user()
-        ],$status =200);
     }
 
     /**
@@ -58,10 +52,17 @@ class RolController extends Controller
     public function show($id)
     {
         $rol=Rol::where('id', $id)->first();
-        if(! $rol)
-            return abort(404);
-
-        return $rol; 
+        if (! $rol){
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+      
+        $response['message'] = 'ok';
+        $response['values'] = $rol;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
     /**
