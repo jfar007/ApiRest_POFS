@@ -27,6 +27,7 @@ class CreatePurchaseOrderTable extends Migration
             $table->double('total_quantity');
             $table->string('purchase_order_number',100)->nullable(); 
             $table->string('purchase_order_url',150)->nullable();
+            $table->dateTime('cut_date')->nullable();
             $table->unsignedInteger('status_id');        
             $table->foreign('status_id')
                     ->references('id')->on('status')

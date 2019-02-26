@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\PurchaseOrderDetails;
+use App\Task;
 use Illuminate\Http\Request;
 
-class PurchaseOrderDetailsController extends Controller
+class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -24,7 +24,7 @@ class PurchaseOrderDetailsController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -35,16 +35,17 @@ class PurchaseOrderDetailsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+     
+
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
+     * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(PurchaseOrderDetails $purchaseOrderDetails)
+    public function show(Task $task)
     {
         //
     }
@@ -52,10 +53,10 @@ class PurchaseOrderDetailsController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
+     * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrderDetails $purchaseOrderDetails)
+    public function edit(Task $task)
     {
         //
     }
@@ -64,10 +65,10 @@ class PurchaseOrderDetailsController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
+     * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PurchaseOrderDetails $purchaseOrderDetails)
+    public function update(Request $request, Task $task)
     {
         //
     }
@@ -75,15 +76,11 @@ class PurchaseOrderDetailsController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
+     * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PurchaseOrderDetails $purchaseOrderDetails)
+    public function destroy(Task $task)
     {
         //
     }
-
-    
-
-
 }

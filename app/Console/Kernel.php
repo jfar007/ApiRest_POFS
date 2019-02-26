@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Http\Controllers\LogController;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,6 +27,15 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
+    
+        $schedule->call(function () {
+            $log = new LogController();
+            $log->write_log("Estro es una prueba cada minuto.","Debug");
+        })->everyMinute();
+
+        
+
+
     }
 
     /**

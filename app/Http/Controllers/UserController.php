@@ -33,7 +33,8 @@ class UserController extends Controller
         {
             $user= $this->valideRelations($user);
         }
-        
+   
+        // LogController::write_log('ConsultUsers');
         // return response()->json(compact('Users'),200);
         $response['message'] = 'ok';
         $response['values'] = $Users;

@@ -96,6 +96,10 @@ Route::get('/lcpdt/d/{id}','ListCustomerProductDetailsController@destroy');//Get
 
 Route::post('/po','PurchaseOrderController@store');//Create one ListCustomerProductdetails
 
+Route::get('/om','OrderManagementController@index');//Get OrderManagements
+Route::post('/om','OrderManagementController@store');//Create one OrderManagement
+Route::post('/om/{id}','OrderManagementController@update');//Update OrderManagement
+Route::get('/om/d/{id}','OrderManagementController@destroy');//Delete OrderManagement
+Route::get('/om/{id}','ListCustomerProductController@show');//Get OrderManagement 
 
-
-
+Route::get('/oma','OrderManagementController@orderManagement');//Get OrderManagements
