@@ -287,12 +287,25 @@ class OrderManagementController extends Controller
                                 $id = 1;
                                 $result = 0;
                                 Log::info('data necesary: '. 'purCt->id ' . $purCt->id . ' purCt->customer_id '. $purCt->customer_id . ' customer->profile_id ' . $customer->profile_id . ' date' .  date_create($CutDate)->format('d-m-Y') );
+                                
+                                $dateparam = date_create($CutDate)->format('Y-m-d');
+                                if ($customer->profile_id == 2){
+                                    $ordmtmp = new OrderManagement();
+                                    $ordmtmp->name_of_day = 'Lunes';
+                                    $ordmtmp->hour_of_day =  $order->hour_of_day;
+                                    $ordmtmp->from = date_create($CutDate)->format('Y-m-d');
+                                    Log::info('ordmtmp:: '. json_encode($ordmtmp));
+                                    $newDate = $this->getCutDate( $ordmtmp);
+                                    Log::info('newDate:: '. $newDate);
+                                    $dateparam = date_create($newDate)->format('Y-m-d');
+                                }
                                 $paramst =  [ $purCt->id ,
                                 $purCt->customer_id ,
                                 $customer->profile_id,
-                                date_create($CutDate)->format('Y-m-d'),
+                                $dateparam,
                                 ]; 
                                 Log::info( json_encode($paramst) . var_dump($paramst));
+
 
                                 $data = DB::select(
                                     'CALL create_list_customer_product_details(?, ?, ?, ?)',
