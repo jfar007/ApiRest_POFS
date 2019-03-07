@@ -258,7 +258,6 @@ class OrderManagementController extends Controller
                                 $createPedio = true;
                                 Log::info('orderUPD: '. $order);
                             }else{
-                                
                                 Log::info('$order: '. $order);
                             }
 

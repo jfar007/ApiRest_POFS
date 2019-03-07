@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-02-2019 a las 15:29:14
+-- Tiempo de generación: 07-03-2019 a las 01:33:41
 -- Versión del servidor: 10.1.37-MariaDB
 -- Versión de PHP: 7.3.1
 
@@ -21,6 +21,61 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `fsolutionslvdb`
 --
+
+DELIMITER $$
+--
+-- Procedimientos
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_list_customer_product_details` (IN `po_id` INTEGER, IN `ct_id` INTEGER, IN `profile_id` INTEGER, IN `cut_date` DATE)  BEGIN
+ DECLARE AccountID VARCHAR(45);
+ DECLARE v1 INT DEFAULT 0;
+  
+  
+  IF profile_id = 1 THEN
+
+   INSERT INTO purchase_order_details   (purchase_order_id,product_id,purchase_order_date,created_at,updated_at )   
+   SELECT  
+   po_id,lctdt.product_id,cut_date, CURRENT_TIMESTAMP()  ,CURRENT_TIMESTAMP()  
+   FROM list_customer_product lct left join list_customer_product_details lctdt on lct.id =  lctdt.list_customer_product_id   
+   where 
+   lct.customer_id = ct_id and lct.active = 1;
+   
+   
+   select * from purchase_order_details podt where podt.purchase_order_id = po_id;
+   
+  ELSEIF profile_id = 2 THEN
+
+
+
+  WHILE v1 < 7 DO
+  
+   INSERT INTO purchase_order_details   (purchase_order_id,product_id,purchase_order_date,created_at,updated_at )   
+   SELECT  
+   po_id,lctdt.product_id, DATE_ADD(cut_date, INTERVAL v1 DAY), CURRENT_TIMESTAMP()  ,CURRENT_TIMESTAMP()  
+   FROM list_customer_product lct left join list_customer_product_details lctdt on lct.id =  lctdt.list_customer_product_id   
+   where 
+   lct.customer_id = ct_id and lct.active = 1;
+   
+     SET v1 = v1 + 1;
+  END WHILE;
+
+  
+   
+   SELECT  * FROM list_customer_product lct where lct.customer_id = ct_id and active = 1;
+   
+   ELSE
+   
+   SELECT  * FROM list_customer_product lct where lct.customer_id = ct_id and active = 1;
+   
+
+   END IF;
+
+
+
+   
+ END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -45,7 +100,7 @@ CREATE TABLE `branch_office` (
 --
 
 INSERT INTO `branch_office` (`id`, `name`, `main_phone`, `main_address`, `latitude_longitude_elevation`, `customer_id`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'KFC Iserra', '31234521', 'Iserra', '12345', 1, 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'KFC Iserra', '31234521', 'Iserra', '12345', 1, 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13');
 
 -- --------------------------------------------------------
 
@@ -67,9 +122,9 @@ CREATE TABLE `category` (
 --
 
 INSERT INTO `category` (`id`, `name`, `short_name`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'FRZ', 'FRZ', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(2, 'REF', 'REF', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(3, 'DRY', 'DRY', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'FRZ', 'FRZ', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, 'REF', 'REF', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(3, 'DRY', 'DRY', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13');
 
 -- --------------------------------------------------------
 
@@ -93,7 +148,8 @@ CREATE TABLE `customer` (
 --
 
 INSERT INTO `customer` (`id`, `name`, `main_phone`, `main_address`, `profile_id`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'KFC', '7222254', 'CC Iserra 100', 1, 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'KFC', '7222254', 'CC Iserra 100', 2, 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, 'Latam', '3322145', 'Aeropuesto Internacional', 2, 1, '2019-02-26 01:46:44', '2019-02-26 01:46:44');
 
 -- --------------------------------------------------------
 
@@ -112,6 +168,13 @@ CREATE TABLE `list_customer_product` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `list_customer_product`
+--
+
+INSERT INTO `list_customer_product` (`id`, `name`, `description`, `customer_id`, `users_lm_id`, `active`, `created_at`, `updated_at`) VALUES
+(2, 'Lista KFC', 'Lista KFC', 1, 1, 1, '2019-02-26 01:23:32', '2019-02-26 01:23:32');
+
 -- --------------------------------------------------------
 
 --
@@ -128,6 +191,14 @@ CREATE TABLE `list_customer_product_details` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `list_customer_product_details`
+--
+
+INSERT INTO `list_customer_product_details` (`id`, `list_customer_product_id`, `product_id`, `suggest`, `priority`, `active`, `created_at`, `updated_at`) VALUES
+(3, 2, 1, 0, 1, 1, '2019-02-26 01:45:30', '2019-02-26 01:45:30'),
+(4, 2, 2, 1, 2, 1, '2019-02-26 01:45:30', '2019-02-26 01:45:30');
 
 -- --------------------------------------------------------
 
@@ -161,7 +232,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (13, '2019_02_11_211804_create_list_customer_product_table', 1),
 (14, '2019_02_11_211914_create_list_customer_product_details_table', 1),
 (15, '2019_02_11_212130_create_purchase_order_table', 1),
-(16, '2019_02_11_212233_create_purchase_order_details_table', 1);
+(16, '2019_02_11_212233_create_purchase_order_details_table', 1),
+(17, '2019_02_26_090309_create_task_table', 1),
+(18, '2019_02_26_090511_create_order_management_table', 1);
 
 -- --------------------------------------------------------
 
@@ -179,6 +252,41 @@ CREATE TABLE `notificationdays` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `notificationdays`
+--
+
+INSERT INTO `notificationdays` (`id`, `day`, `until_this_time`, `send_notification`, `active`, `customer_id`, `created_at`, `updated_at`) VALUES
+(1, 'Martes', 14, 1, 1, 2, '2019-02-26 01:46:44', '2019-02-26 01:46:44');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `order_management`
+--
+
+CREATE TABLE `order_management` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `task_id` int(10) UNSIGNED NOT NULL,
+  `customer_id` int(10) UNSIGNED NOT NULL,
+  `from` date NOT NULL,
+  `name_of_day` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `hour_of_day` time NOT NULL,
+  `notify` tinyint(1) NOT NULL DEFAULT '0',
+  `initial_day_notify` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `notify_from` time NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `order_management`
+--
+
+INSERT INTO `order_management` (`id`, `task_id`, `customer_id`, `from`, `name_of_day`, `hour_of_day`, `notify`, `initial_day_notify`, `notify_from`, `active`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, '2019-02-27', 'Martes', '15:00:00', 1, 'Viernes', '09:00:00', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -207,7 +315,8 @@ CREATE TABLE `product` (
 --
 
 INSERT INTO `product` (`id`, `cod_fs`, `item`, `name`, `pronunciation_in_english`, `description`, `packsize`, `picture_url`, `category_id`, `unit_id`, `active`, `created_at`, `updated_at`) VALUES
-(1, '001', '1', 'DESSERT APPLE CROSTATA', 'DESSERT APPLE CROSTATA', 'DESSERT APPLE CROSTATA', '1/24 CT', 'https:', 1, 1, 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, '001', '1', 'DESSERT APPLE CROSTATA', 'DESSERT APPLE CROSTATA', 'DESSERT APPLE CROSTATA', '1/24 CT', 'https:', 1, 1, 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, '002', '100', 'BASE2', 'BASE DOS', '', '5 LB', 'http://192.168.230.128/foodsolutionslrv/public/images/1551145335.png', 1, 4, 0, '2019-02-26 01:42:15', '2019-02-26 01:42:15');
 
 -- --------------------------------------------------------
 
@@ -228,8 +337,8 @@ CREATE TABLE `profile` (
 --
 
 INSERT INTO `profile` (`id`, `name`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Perfil 1', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(2, 'Perfil 2', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'Perfil 1', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, 'Perfil 2', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13');
 
 -- --------------------------------------------------------
 
@@ -245,12 +354,21 @@ CREATE TABLE `purchase_order` (
   `total_quantity` double NOT NULL,
   `purchase_order_number` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `purchase_order_url` varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `cut_date` datetime DEFAULT NULL,
   `status_id` int(10) UNSIGNED NOT NULL,
   `users_create_id` int(10) UNSIGNED NOT NULL,
   `users_lm_id` int(10) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `purchase_order`
+--
+
+INSERT INTO `purchase_order` (`id`, `customer_id`, `branch_office_id`, `description`, `total_quantity`, `purchase_order_number`, `purchase_order_url`, `cut_date`, `status_id`, `users_create_id`, `users_lm_id`, `created_at`, `updated_at`) VALUES
+(19, 1, 1, '', 0, '', '', '2019-03-05 15:00:00', 2, 1, 1, '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(20, 1, 1, '', 0, '', '', '2019-03-12 15:00:00', 1, 1, 1, '2019-03-07 02:03:39', '2019-03-07 02:03:39');
 
 -- --------------------------------------------------------
 
@@ -262,11 +380,45 @@ CREATE TABLE `purchase_order_details` (
   `id` int(10) UNSIGNED NOT NULL,
   `purchase_order_id` int(10) UNSIGNED NOT NULL,
   `product_id` int(10) UNSIGNED NOT NULL,
-  `quantity` double NOT NULL,
+  `quantity` double DEFAULT NULL,
   `purchase_order_date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `purchase_order_details`
+--
+
+INSERT INTO `purchase_order_details` (`id`, `purchase_order_id`, `product_id`, `quantity`, `purchase_order_date`, `created_at`, `updated_at`) VALUES
+(126, 19, 1, NULL, '2019-03-11', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(127, 19, 2, NULL, '2019-03-11', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(129, 19, 1, NULL, '2019-03-12', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(130, 19, 2, NULL, '2019-03-12', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(132, 19, 1, NULL, '2019-03-13', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(133, 19, 2, NULL, '2019-03-13', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(135, 19, 1, NULL, '2019-03-14', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(136, 19, 2, NULL, '2019-03-14', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(138, 19, 1, NULL, '2019-03-15', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(139, 19, 2, NULL, '2019-03-15', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(141, 19, 1, NULL, '2019-03-16', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(142, 19, 2, NULL, '2019-03-16', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(144, 19, 1, NULL, '2019-03-17', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(145, 19, 2, NULL, '2019-03-17', '2019-02-27 01:38:23', '2019-02-27 01:38:23'),
+(147, 20, 1, NULL, '2019-03-18', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(148, 20, 2, NULL, '2019-03-18', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(150, 20, 1, NULL, '2019-03-19', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(151, 20, 2, NULL, '2019-03-19', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(153, 20, 1, NULL, '2019-03-20', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(154, 20, 2, NULL, '2019-03-20', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(156, 20, 1, NULL, '2019-03-21', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(157, 20, 2, NULL, '2019-03-21', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(159, 20, 1, NULL, '2019-03-22', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(160, 20, 2, NULL, '2019-03-22', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(162, 20, 1, NULL, '2019-03-23', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(163, 20, 2, NULL, '2019-03-23', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(165, 20, 1, NULL, '2019-03-24', '2019-03-07 02:03:39', '2019-03-07 02:03:39'),
+(166, 20, 2, NULL, '2019-03-24', '2019-03-07 02:03:39', '2019-03-07 02:03:39');
 
 -- --------------------------------------------------------
 
@@ -287,9 +439,9 @@ CREATE TABLE `rol` (
 --
 
 INSERT INTO `rol` (`id`, `name`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Administrador', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(2, 'Distribuidor', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(3, 'Suscursal', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'Administrador', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, 'Distribuidor', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(3, 'Suscursal', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13');
 
 -- --------------------------------------------------------
 
@@ -334,6 +486,39 @@ CREATE TABLE `status` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+--
+-- Volcado de datos para la tabla `status`
+--
+
+INSERT INTO `status` (`id`, `name`, `description`, `active`, `created_at`, `updated_at`) VALUES
+(1, 'Creado', 'Pedido creado.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(2, 'No confirmado', 'Pedido no confirmado por el cliente.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(3, 'Generado', 'Pedido autorizado por el cliente.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(4, 'Alistamiento', 'Pedido en curso esta en alistamiento.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(5, 'Transito', 'Pedido en curso esta en transito.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(6, 'Entregado', 'Pedido en curso esta en entregado.', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `task`
+--
+
+CREATE TABLE `task` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `name` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Volcado de datos para la tabla `task`
+--
+
+INSERT INTO `task` (`id`, `name`, `active`, `created_at`, `updated_at`) VALUES
+(1, 'Gestionar Pedido', 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14');
+
 -- --------------------------------------------------------
 
 --
@@ -354,10 +539,10 @@ CREATE TABLE `unit` (
 --
 
 INSERT INTO `unit` (`id`, `name`, `short_name`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Cajas', 'Cajas', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(2, 'Unidades', 'Unidades', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(3, 'Kg', 'Kg', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(4, 'Libras', 'Libras', 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'Cajas', 'Cajas', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(2, 'Unidades', 'Unidades', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(3, 'Kg', 'Kg', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13'),
+(4, 'Libras', 'Libras', 1, '2019-02-25 20:43:13', '2019-02-25 20:43:13');
 
 -- --------------------------------------------------------
 
@@ -391,8 +576,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `name`, `email`, `branch_office`, `mobile_phone`, `landline`, `address`, `latitude_longitude_elevation`, `rol_id`, `customer_id`, `branch_office_cf_id`, `confirmed`, `confirmation_code`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Adminplt', '$2y$10$M0iZaPZpFpBxCTm5eunePuNucLSDWkTHCKCryYILQM521lq/9QUuS', 'Administrador Plataforma', 'jfar07@hotmail.com', 'all', 'false', 'false', 'false', 'false', 1, NULL, NULL, 1, NULL, 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59'),
-(2, 'fsdis001', '$2y$10$frBa6K87hX6vhgK/uIXiFuqcTuoFxyMIADZDEgI0.DZHJLi4EpzC6', 'Distribuidor de la Plataforma', 'no-reply@foodsolutionsmarket.com', 'all', 'false', 'false', 'false', 'false', 2, NULL, NULL, 1, NULL, 1, '2019-02-25 14:28:59', '2019-02-25 14:28:59');
+(1, 'Adminplt', '$2y$10$FNdmf2a72HpenyTfxgPoN.H6VMmdkAE.MvyNL0c2nfxG7GlUXrMhS', 'Administrador Plataforma', 'jfar07@hotmail.com', 'all', 'false', 'false', 'false', 'false', 1, NULL, NULL, 1, NULL, 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14'),
+(2, 'fsdis001', '$2y$10$3jfjEM5tOy6MAmcg6lw/zOrA9kwZbqZwhA1X4wVkFETtRNEJOs7c2', 'Distribuidor de la Plataforma', 'no-reply@foodsolutionsmarket.com', 'all', 'false', 'false', 'false', 'false', 2, NULL, NULL, 1, NULL, 1, '2019-02-25 20:43:14', '2019-02-25 20:43:14');
 
 --
 -- Índices para tablas volcadas
@@ -446,6 +631,14 @@ ALTER TABLE `migrations`
 ALTER TABLE `notificationdays`
   ADD PRIMARY KEY (`id`),
   ADD KEY `notificationdays_customer_id_foreign` (`customer_id`);
+
+--
+-- Indices de la tabla `order_management`
+--
+ALTER TABLE `order_management`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_management_task_id_foreign` (`task_id`),
+  ADD KEY `order_management_customer_id_foreign` (`customer_id`);
 
 --
 -- Indices de la tabla `product`
@@ -506,6 +699,12 @@ ALTER TABLE `status`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `task`
+--
+ALTER TABLE `task`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indices de la tabla `unit`
 --
 ALTER TABLE `unit`
@@ -542,37 +741,43 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT de la tabla `customer`
 --
 ALTER TABLE `customer`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `list_customer_product`
 --
 ALTER TABLE `list_customer_product`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `list_customer_product_details`
 --
 ALTER TABLE `list_customer_product_details`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `notificationdays`
 --
 ALTER TABLE `notificationdays`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `order_management`
+--
+ALTER TABLE `order_management`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `product`
 --
 ALTER TABLE `product`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `profile`
@@ -584,13 +789,13 @@ ALTER TABLE `profile`
 -- AUTO_INCREMENT de la tabla `purchase_order`
 --
 ALTER TABLE `purchase_order`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de la tabla `purchase_order_details`
 --
 ALTER TABLE `purchase_order_details`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
 
 --
 -- AUTO_INCREMENT de la tabla `rol`
@@ -608,7 +813,13 @@ ALTER TABLE `section`
 -- AUTO_INCREMENT de la tabla `status`
 --
 ALTER TABLE `status`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT de la tabla `task`
+--
+ALTER TABLE `task`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `unit`
@@ -657,6 +868,13 @@ ALTER TABLE `list_customer_product_details`
 --
 ALTER TABLE `notificationdays`
   ADD CONSTRAINT `notificationdays_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `order_management`
+--
+ALTER TABLE `order_management`
+  ADD CONSTRAINT `order_management_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_management_task_id_foreign` FOREIGN KEY (`task_id`) REFERENCES `task` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `product`

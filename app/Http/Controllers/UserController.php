@@ -261,12 +261,11 @@ class UserController extends Controller
         }
 
         $user = $this->valideRelations($user);
-   
-        
         $response['message'] = 'ok';
         $response['values'] = $user;
         $response['user_id'] = 'PD';
         return response()->json($response,200);
+        return $user;
 
     }
 
