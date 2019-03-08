@@ -28,10 +28,12 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
     
-        $schedule->call(function () {
-            $log = new LogController();
-            $log->write_log("Estro es una prueba cada minuto.","Debug");
-        })->everyMinute();
+     //  $schedule->call(function () {
+     //      $log = new LogController();
+     //      $log->write_log("Estro es una prueba cada minuto.","Debug");
+     //  })->everyMinute();
+   
+        $schedule->command('task:ordermanagement')->everyMinute();
 
         
 

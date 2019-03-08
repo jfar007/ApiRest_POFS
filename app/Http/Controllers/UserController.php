@@ -15,6 +15,7 @@ use \Symfony\Component\HttpFoundation\ParameterBag;
 // use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 Use Exception;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -179,8 +180,6 @@ class UserController extends Controller
                 return response()->json($response,404);
             }
                 
-            
-        
                 
             $credentials = $request->only('username','password');
         
@@ -198,8 +197,6 @@ class UserController extends Controller
                 return response()->json($response,500);                 
             }
             
-
-
             if ($user->confirmed==false && !isset( $user->confirmation_code) && ($request['password_new'] == null ||  !isset($request['password_new']) )){
                 $response['message'] = 'error';
                 $response['values'] = ['error details' => 'Exist but requiere password_new','user' => $user];
@@ -221,8 +218,9 @@ class UserController extends Controller
                 $response['values'] = ['details' => 'User no confirmed code','user' => $user];
                 $response['user_id'] = $user->id;
                 return response()->json($response,403);
-            }        
+            }      
 
+       
             $userrsp = JWTAuth::user();
         
         } catch (Exception $e) {
@@ -233,15 +231,16 @@ class UserController extends Controller
         }
         // $response = compact('tocken');
         // $response['user'] = $userrsp;
-
+        $request->session()->put('user', $user);
         $response['message'] = 'ok';
         $response['values'] = $user;
         $response['user_id'] = 'PD';
+        $response['tocken'] = $tocken;
         return response()->json($response,200);
 
         // return  response()->json(['message' => 
         // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
-;
+
     }
 
     /**
@@ -250,24 +249,37 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    // public function show($id)
+    // {
+    //     $user = User::where('id', $id)->first();
+    //     if (! $user){
+    //         $response['message'] = 'error';
+    //         $response['values'] = ['error details' => 'No exist'];
+    //         $response['user_id'] = null;
+    //         return response()->json($response,404);
+    //     }
+
+    //     $user = $this->valideRelations($user);
+    //     $response['message'] = 'ok';
+    //     $response['values'] = $user;
+    //     $response['user_id'] = 'PD';
+    //     return response()->json($response,200);
+    //     return $user;
+
+    // }
+
+    public function show(Request $request,$id)
     {
-        $user = User::where('id', $id)->first();
-        if (! $user){
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => 'No exist'];
-            $response['user_id'] = null;
-            return response()->json($response,404);
-        }
-
-        $user = $this->valideRelations($user);
-        $response['message'] = 'ok';
-        $response['values'] = $user;
-        $response['user_id'] = 'PD';
-        return response()->json($response,200);
-        return $user;
-
+        Log::info('show!'. json_encode( $request->session()));
+        //  $value = $request->session()->get('user');
+        // $user = User::where('email', $value->email)->first();
+        Log::info('show! Class UserController' . json_encode( $request->session()->all()) );
+        $user = $request->session()->get('user');
+        $userjs =  $user->email;
+        Log::info('show! Class UserController' . $userjs );
+        return response()->json(  $request->user() );
     }
+
 
     public function valideRelations(User $user){
         if(isset($user['rol_id']) && !$user['rol_id'] == null) {

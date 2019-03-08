@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Http\Controllers\OrderManagementController;
 
 class ordermanagement extends Command
 {
@@ -54,7 +55,8 @@ class ordermanagement extends Command
      */
     public function handle()
     {
-        
+       $order = new  OrderManagementController();
+       $order->orderManagement();
     }
 
     

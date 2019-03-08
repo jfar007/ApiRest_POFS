@@ -190,6 +190,7 @@ class OrderManagementController extends Controller
             Log::info('---------------------------------------------');
             $orders = OrderManagement::where('active', '1')->get();
             foreach($orders as $order){
+                Log::info('Veces' );
                 $customer = DB::table('customer')
                 ->where('id', '=', $order->customer_id )
                 ->where(function ($query) {
@@ -261,64 +262,81 @@ class OrderManagementController extends Controller
                                 Log::info('$order: '. $order);
                             }
 
-                          
-                           
-                            
                             $useridAdmin = 1;
                             //'customer_id','branch_office_id','description','total_quantity','purchase_order_number','purchase_order_url'
                             // ,'cut_date','status_id','users_create_id','users_lm_id')
                             if($createPedio){
-                                $parameters =  [
-                                    'customer_id' =>   $order->customer_id
-                                    ,'branch_office_id' => $branchOffice->id
-                                    ,'description'=> ''
-                                    ,'total_quantity' => '0'
-                                    ,'purchase_order_number' => ''
-                                    ,'purchase_order_url' =>  ''
-                                    ,'cut_date' =>  $CutDate
-                                    ,'status_id' => $statusIdCreated
-                                    ,'users_create_id' => $useridAdmin
-                                    ,'users_lm_id' => $useridAdmin
-                                ];
-                                $purCt = PurchaseOrder::create($parameters);
-                                
-                                $model = new ListCustomerProduct();
-                                $id = 1;
-                                $result = 0;
-                                Log::info('data necesary: '. 'purCt->id ' . $purCt->id . ' purCt->customer_id '. $purCt->customer_id . ' customer->profile_id ' . $customer->profile_id . ' date' .  date_create($CutDate)->format('d-m-Y') );
-                                
-                                $dateparam = date_create($CutDate)->format('Y-m-d');
-                                if ($customer->profile_id == 2){
-                                    $ordmtmp = new OrderManagement();
-                                    $ordmtmp->name_of_day = 'Lunes';
-                                    $ordmtmp->hour_of_day =  $order->hour_of_day;
-                                    $ordmtmp->from = date_create($CutDate)->format('Y-m-d');
-                                    Log::info('ordmtmp:: '. json_encode($ordmtmp));
-                                    $newDate = $this->getCutDate( $ordmtmp);
-                                    Log::info('newDate:: '. $newDate);
-                                    $dateparam = date_create($newDate)->format('Y-m-d');
-                                }
-                                $paramst =  [ $purCt->id ,
-                                $purCt->customer_id ,
-                                $customer->profile_id,
-                                $dateparam,
-                                ]; 
-                                Log::info( json_encode($paramst) . var_dump($paramst));
 
-
-                                $data = DB::select(
-                                    'CALL create_list_customer_product_details(?, ?, ?, ?)',
-                                    $paramst
-                                );
-                            
+                                $lcp = DB::table('list_customer_product')
+                                        ->select(DB::raw('count(*) as listprod'))
+                                        ->leftJoin('list_customer_product_details', 'list_customer_product.id', '=', 'list_customer_product_details.list_customer_product_id')
+                                        ->where('list_customer_product.customer_id',  $order->customer_id)
+                                        ->when( $filter,function ($query, $filter) {
+                                            $query->where(
+                                                'list_customer_product.active', '=', '1')
+                                                ->where(
+                                                    'list_customer_product_details.active', '=',  '1'
+                                                  )
+                                                ->where(
+                                                'list_customer_product_details.suggest', '=',  '0'
+                                                );
+                                        })
+                                        ->get();
+                                Log::info('list_customer_product:: '. json_encode($lcp));
+                                $lcp = $lcp[0];
+                                Log::info('list_customer_product:: '. json_encode($lcp));
+                                if($lcp->listprod > 0) {
+                                        $parameters =  [
+                                            'customer_id' =>   $order->customer_id
+                                            ,'branch_office_id' => $branchOffice->id
+                                            ,'description'=> ''
+                                            ,'total_quantity' => '0'
+                                            ,'purchase_order_number' => ''
+                                            ,'purchase_order_url' =>  ''
+                                            ,'cut_date' =>  $CutDate
+                                            ,'status_id' => $statusIdCreated
+                                            ,'users_create_id' => $useridAdmin
+                                            ,'users_lm_id' => $useridAdmin
+                                        ];
+                                        $purCt = PurchaseOrder::create($parameters);
+                                        
+                                        $model = new ListCustomerProduct();
+                                        $id = 1;
+                                        $result = 0;
+                                        Log::info('data necesary: '. 'purCt->id ' . $purCt->id . ' purCt->customer_id '. $purCt->customer_id . ' customer->profile_id ' . $customer->profile_id . ' date' .  date_create($CutDate)->format('d-m-Y') );
+                                        
+                                        $dateparam = date_create($CutDate)->format('Y-m-d');
+                                        if ($customer->profile_id == 2){
+                                            $ordmtmp = new OrderManagement();
+                                            $ordmtmp->name_of_day = 'Lunes';
+                                            $ordmtmp->hour_of_day =  $order->hour_of_day;
+                                            $ordmtmp->from = date_create($CutDate)->format('Y-m-d');
+                                           
+                                            $newDate = $this->getCutDate( $ordmtmp);
+                                            Log::info('newDate:: '. $newDate);
+                                            $dateparam = date_create($newDate)->format('Y-m-d');
+                                        }
+                                        $paramst =  [ $purCt->id ,
+                                        $purCt->customer_id ,
+                                        $customer->profile_id,
+                                        $dateparam,
+                                        ]; 
+                                        Log::info( json_encode($paramst) . var_dump($paramst));
+                                        $data = DB::select(
+                                            'CALL create_list_customer_product_details(?, ?, ?, ?)',
+                                            $paramst
+                                        );
+                                    }
+                                           
+                                        
                                 // Log::info('$data: '.json_encode($data));
 
-                                $param = new ParameterBag($parameters);
+                             //   $param = new ParameterBag($parameters);
                               
                             //    $param->add($parameters);
                                 //Encabezado y luego Detalle
-                                Log::info('$param: '. json_encode($param));
-                                return json_encode($parameters);
+                                // Log::info('$param: '. json_encode($param));
+                               // return json_encode($parameters);
                             }
                             
                         }

@@ -22,12 +22,12 @@ Route::middleware(['jwt.auth'])->group(function(){
 });
 Route::group(['middleware' => ['jwt.auth']], function(){
    
- 
+    Route::get('/u/{id}','UserController@show');//Get users
     
 });
 
 //Requieren TOKEN
-Route::get('/u/{id}','UserController@show');//Get users
+// Route::get('/u/{id}','UserController@show');//Get users
 //Route::get('/uapl','UserController@getAuthenticatedUserpl');//Get users
 //Route::get('/ua','UserController@getAuthenticatedUser');//Get users
 //Route::get('/uainfo','UserController@getAuthenticatedUserInfo');//Get users
@@ -94,7 +94,7 @@ Route::post('/lcpdt/{id}','ListCustomerProductDetailsController@update');//Edit 
 Route::get('/lcpdt/d/{id}','ListCustomerProductDetailsController@destroy');//Get ListCustomerProductdetails from list_customer_product_id
 
 
-Route::post('/po','PurchaseOrderController@store');//Create one ListCustomerProductdetails
+
 
 Route::get('/om','OrderManagementController@index');//Get OrderManagements
 Route::post('/om','OrderManagementController@store');//Create one OrderManagement
@@ -103,3 +103,9 @@ Route::get('/om/d/{id}','OrderManagementController@destroy');//Delete OrderManag
 Route::get('/om/{id}','ListCustomerProductController@show');//Get OrderManagement 
 
 Route::get('/oma','OrderManagementController@orderManagement');//Get OrderManagements
+
+Route::post('/po','PurchaseOrderDetailsController@store');//Create one OrderManagements // Para pedidos sugeridos 
+Route::get('/po/{id}','PurchaseOrderDetailsController@show');//Get OrderManagements
+Route::get('/po','PurchaseOrderDetailsController@index');//Get OrderManagements
+
+
