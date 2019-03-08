@@ -222,7 +222,7 @@ class UserController extends Controller
 
        
             $userrsp = JWTAuth::user();
-        
+            
         } catch (Exception $e) {
             $response['message'] = 'error';
             $response['values'] = ['error details' => $e->getMessage()];
@@ -232,6 +232,7 @@ class UserController extends Controller
         // $response = compact('tocken');
         // $response['user'] = $userrsp;
         $request->session()->put('user', $user);
+        $this->valideRelations($user);
         $response['message'] = 'ok';
         $response['values'] = $user;
         $response['user_id'] = 'PD';

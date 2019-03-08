@@ -8,6 +8,7 @@ use App\PurchaseOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 class PurchaseOrderDetailsController extends Controller
 {
@@ -37,8 +38,6 @@ class PurchaseOrderDetailsController extends Controller
             $podt= '';
             if(! $bofid == null ){
                 $filter = [];
-                Log::info('ix' . 3);
-                $podt = new PurchaseOrderDetails();
                 $podt = DB::table('purchase_order')
                 ->select('purchase_order_details.*')
                 ->leftJoin('purchase_order_details', 'purchase_order.id', '=', 'purchase_order_details.purchase_order_id')
@@ -46,7 +45,8 @@ class PurchaseOrderDetailsController extends Controller
                 ->when( $filter,function ($query, $filter) {
                     $query->where('purchase_order.status_id', '=', '1');        
                 })
-                ->get()[0];
+                ->orderBy('purchase_order_details.purchase_order_date')
+                ->get();
                 
            
 
@@ -56,10 +56,24 @@ class PurchaseOrderDetailsController extends Controller
                     $response['user_id'] = null;
                     return response()->json($response,204);
                 }
-            
+               
+                $resutl = array();
+                $temp = array();
                 foreach($podt as $po){
-                    $this->valideRelations($po);
+                    $podtf = new PurchaseOrderDetails((array) $po);
+                    $this->valideRelations($podtf);
+                    if(isset($resutl) && array_key_exists($podtf->purchase_order_date, $resutl))
+                    {
+                        $temp[] = $podtf;
+                        $resutl[$podtf->purchase_order_date] =  $temp;
+                     }
+                     else{
+                        $temp = array();
+                        $temp[] = $podtf;
+                        $resutl[$podtf->purchase_order_date] =  $temp;
+                     }
                 }
+
             }
 
         } catch (Exception $e) {
@@ -72,7 +86,7 @@ class PurchaseOrderDetailsController extends Controller
 
 
         $response['message'] = 'ok';
-        $response['values'] = $podt;
+        $response['values'] =  $resutl;
         $response['user_id'] = 'PD';
         return response()->json($response,200);
     }
@@ -114,6 +128,14 @@ class PurchaseOrderDetailsController extends Controller
 
     }
 
+    public function storeJson(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+        $first= true;
+        foreach($data['values'] as $lcd){
+            
+        }
+    }
     /**
      * Display the specified resource.
      *
