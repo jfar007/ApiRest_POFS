@@ -34,7 +34,7 @@ class PurchaseOrderDetailsController extends Controller
                 $bofid =  $user->branch_office_cf_id;
             }
 
-            Log::info('index ' . $bofid);
+
             $podt= '';
             if(! $bofid == null ){
                 $filter = [];
@@ -128,14 +128,7 @@ class PurchaseOrderDetailsController extends Controller
 
     }
 
-    public function storeJson(Request $request)
-    {
-        $data = json_decode($request->getContent(), true);
-        $first= true;
-        foreach($data['values'] as $lcd){
-            
-        }
-    }
+
     /**
      * Display the specified resource.
      *
@@ -170,9 +163,112 @@ class PurchaseOrderDetailsController extends Controller
      * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrderDetails $purchaseOrderDetails)
+    public function editJson(Request $request,$id)
     {
-        //
+        try{
+
+        
+        $data = json_decode($request->getContent(), true);
+        $first= true;
+        $tempint=0;
+        
+        foreach($data['values'] as $lcd){
+            Log::info('vardmp ' .  var_dump($lcd));
+            // $jspo = json_encode($lcd[0]);
+            // Log::info('editJson ' . $jspo);
+            // $jspo = json_encode($lcd[1]);
+            // Log::info('editJson ' . $jspo);
+            $max = sizeof($lcd);
+            $pushOrder= 0;
+            for($i = 0; $i < $max;$i++)
+            {
+                $jspo = json_encode($lcd[$i]);
+                Log::info('editJson ' . $jspo);
+                $obpo = new PurchaseOrderDetails($lcd[$i]);
+                Log::info('obpo ' . $obpo);
+                $filter = [
+                    'product_id' => $obpo->product_id
+                    ,'purchase_order_date' => $obpo->purchase_order_date
+                    ];
+                $pushOrder = $obpo->purchase_order_id;
+                $purchaseOrder = 
+                DB::table('purchase_order_details')
+                ->where('purchase_order_id',  $obpo->purchase_order_id)
+                ->when( $filter,function ($query, $filter) {
+                        $query->where('product_id', $filter['product_id'])
+                                ->where('purchase_order_date', $filter['purchase_order_date']);
+                        })
+                ->update(['quantity' => $obpo->quantity]);                
+            }
+        }
+            Log::info('index ' . json_encode($request->session()->get('user')));
+            $userid = null;
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+                Log::info('entro session' .  $user );
+                $userid =  $user->id;
+             
+            }else if ($request->user()){
+                $user = $request->$request->user();
+                Log::info('entro request' .  $user );
+                $userid =  $user->id;
+            }
+
+            if(! $userid == null ){
+                $pohe= PurchaseOrder::where('id', $pushOrder)->first();
+                if($pohe){
+                    $pohe->users_lm_id =  $userid;
+                    $pohe->save();
+                }
+            }
+
+
+
+            // return var_dump($lcd);
+            // $jspo = json_encode($lcd[$tempint]);
+            // Log::info('editJson ' . $jspo);
+
+            // $tempint2=0;
+            // // foreach($jspo as $lcdd){
+            //     // $jspo2 = json_encode($lcdd[$tempint2]);
+            //     // Log::info('editJson2 ' . $lcdd);
+            // //     Log::info(' $lcdd ' .  $lcdd);
+            // Log::info('obpo ' .  json_decode($jspo ));
+            //     $obpo = new PurchaseOrderDetails((array) $lcd[$tempint]->uno);
+            //     $tempint2 +=1;
+            //     Log::info('obpo ' .  $jspo );
+                
+            //     $obpo = new PurchaseOrderDetails($jspo->dos);
+            //     $tempint2 +=1;
+            //     Log::info('obpo ' .  json_decode($obpo));
+            //     // $filter = [
+            //     //     'product_id' => $obpo->product_id
+            //     //     ,'purchase_order_date' => $obpo->purchase_order_date
+            //     //     ];
+
+            //     // $purchaseOrder = 
+            //     // DB::table('purchase_order_details')
+            //     // ->where('purchase_order_id',  $obpo->purchase_order_id)
+            //     // ->when( $filter,function ($query, $filter) {
+            //     //         $query->where('product_id', $filter['product_id'])
+            //     //                 ->where('purchase_order_date', $filter['purchase_order_date']);
+            //     //         })
+            //     // ->update(['quantity' => $obpo->quantity]);
+
+            // // }      
+            // $tempint +=1;
+            
+        
+
+        // return $purchaseOrder;
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
     }
 
     /**

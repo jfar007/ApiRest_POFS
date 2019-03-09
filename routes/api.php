@@ -108,4 +108,5 @@ Route::post('/po','PurchaseOrderDetailsController@store');//Create one OrderMana
 Route::get('/po/{id}','PurchaseOrderDetailsController@show');//Get OrderManagements
 Route::get('/po','PurchaseOrderDetailsController@index');//Get OrderManagements
 
+Route::post('/po/{id}','PurchaseOrderDetailsController@editJson');//Post OrderManagements
 
