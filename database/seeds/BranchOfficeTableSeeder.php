@@ -14,11 +14,20 @@ class BranchOfficeTableSeeder extends Seeder
     public function run()
     {
         BranchOffice::create([
-            'name' => 'KFC Iserra',
+            'name' => 'CC ',
             'main_phone' => '31234521',
             'main_address' => 'Iserra',
             'latitude_longitude_elevation'  => '12345', 
             'customer_id'  => '1',
+            'active'  => '1',
+        ]);
+
+        BranchOffice::create([
+            'name' => 'CC ',
+            'main_phone' => '31234521',
+            'main_address' => 'Iserra',
+            'latitude_longitude_elevation'  => '12345', 
+            'customer_id'  => '2',
             'active'  => '1',
         ]);
     }

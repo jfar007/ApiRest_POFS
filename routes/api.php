@@ -104,9 +104,13 @@ Route::get('/om/{id}','ListCustomerProductController@show');//Get OrderManagemen
 
 Route::get('/oma','OrderManagementController@orderManagement');//Get OrderManagements
 
-Route::post('/po','PurchaseOrderDetailsController@store');//Create one OrderManagements // Para pedidos sugeridos 
-Route::get('/po/{id}','PurchaseOrderDetailsController@show');//Get OrderManagements
-Route::get('/po','PurchaseOrderDetailsController@index');//Get OrderManagements
+Route::post('/po','PurchaseOrderDetailsController@store');//Create one PurchaseOrderDetails // Se agrega productos (Sugeridos) a pedido 
+Route::get('/po/{id}','PurchaseOrderDetailsController@show');//Get PurchaseOrderDetails
+Route::get('/po','PurchaseOrderDetailsController@index');//Get PurchaseOrderDetails
 
-Route::post('/po/{id}','PurchaseOrderDetailsController@editJson');//Post OrderManagements
+Route::post('/po/{id}','PurchaseOrderDetailsController@editJson');//Post PurchaseOrderDetails
 
+Route::post('/pocst/{id}','PurchaseOrderDetailsController@chageStateSucursalUser');//Update State from SucursalUser
+Route::post('/pocst/{id}/{statusId}','PurchaseOrderDetailsController@chageStateDistribuidorUser');//Update State from SucursalUser
+
+Route::post('/popf/{id}','PurchaseOrderDetailsController@index');//Update State from SucursalUser

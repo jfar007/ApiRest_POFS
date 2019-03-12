@@ -12,12 +12,31 @@ class CustomerTableSeeder extends Seeder
      */
     public function run()
     {
+
         Customer::create([
-            'name' => 'KFC',
+            'name' => 'Olive Garden',
             'main_phone' => '7222254',
-            'main_address' => 'CC Iserra 100',
+            'main_address' => 'CC 100',
             'profile_id' => '1',
             'active' => '1',
         ]);
+        
+        Customer::create([
+            'name' => 'Copa Airlines',
+            'main_phone' => '7222254',
+            'main_address' => 'CC 100',
+            'profile_id' => '2',
+            'active' => '1',
+        ]);
+
+        Customer::create([
+            'name' => 'Copa Club',
+            'main_phone' => '7222254',
+            'main_address' => 'CC 100',
+            'profile_id' => '2',
+            'active' => '1',
+        ]);
+
+   
     }
 }
