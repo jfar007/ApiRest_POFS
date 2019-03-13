@@ -93,7 +93,7 @@ Route::post('/lcpdtjson','ListCustomerProductDetailsController@storeJson');//Cre
 Route::get('/lcpdt/{list_customer_product_id}','ListCustomerProductDetailsController@show');//Get ListCustomerProductdetails from list_customer_product_id
 Route::post('/lcpdt/{id}','ListCustomerProductDetailsController@update');//Edit ListCustomerProductdetails 
 Route::get('/lcpdt/d/{id}','ListCustomerProductDetailsController@destroy');//Get ListCustomerProductdetails from list_customer_product_id
-
+Route::get('/lcpdtsg','ListCustomerProductDetailsController@showSuggest');//Get ListCustomerProductdetails products suggest for customer_id
 
 
 
@@ -118,3 +118,4 @@ Route::post('/popf/{id}','PurchaseOrderDetailsController@index');//Update State 
 
 Route::get('/posh','PurchaseOrderDetailsController@showPurchaseOrder');//Ver ultimos dos pedidos para la sucursal y ultimos 20 para distribuidor
 
+Route::post('/pofl/{id}','PurchaseOrderController@loadFileOrder');

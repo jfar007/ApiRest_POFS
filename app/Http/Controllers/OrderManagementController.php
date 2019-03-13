@@ -8,6 +8,7 @@ use App\Task;
 use App\Customer;
 use App\BranchOffice;
 use App\PurchaseOrder;
+use App\Status;
 use App\ListCustomerProduct;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
@@ -219,12 +220,10 @@ class OrderManagementController extends Controller
                     if($branchOffices){
 
                         foreach($branchOffices as $branchOffice ){
-                            // $purchaseOrder =  PurchaseOrder::where('customer_id',$order->customer_id);
                             $filter = [
                                 'branch_office_id' => $branchOffice->id
                                 ,'status_id' => $statusIdCreated
                             ];
-                            // Log::info('$filter: '. $filter);
                             $purchaseOrder =  DB::table('purchase_order')
                                         ->where('customer_id', '=', $order->customer_id )
                                         ->when( $filter,function ($query, $filter) {
@@ -239,9 +238,44 @@ class OrderManagementController extends Controller
 
                                       
                             if($purchaseOrder){
+                                
+
                                 Log::info(   $purchaseOrder->cut_date . ' - ' .  $CutDate );
                                 $purchaseOrderDt = date_create($purchaseOrder->cut_date);
                                 $dCutDate = date_create($CutDate);
+                                //      //Validar envio de Recordatorio
+                               
+                                $hoy = date("Y-m-d H:i");
+                                // $hoy = date_create($hoy);
+                                $dnot =  $this->getDateNotify($order,  $CutDate);
+                                $dnot =date_create($dnot);
+                                
+                                // $diff=date_diff($hoy,$dnot->format("Y-m-d H:i"));
+                                Log::info('Not: ' . var_dump( $hoy) . 'ot ' .   var_dump( $dnot) . ' dmp ' . var_dump( $purchaseOrderDt)
+                                // .  $this->dateDifference($hoy,$dnot) 
+                                . '$hoy' . $hoy
+                                // . ' $dnot '  . $dnot 
+                                . ' - '
+                                . $hoy 
+                                . ' - '
+                                . $dnot->format("Y-m-d H:i") 
+                                . ' - '
+                                . ($hoy > $dnot->format("Y-m-d H:i") ) 
+                                . ' - '
+                                . ($hoy ==  $dnot) 
+                                . ' - '
+                                . ($hoy <  $purchaseOrderDt)
+                             
+                       
+                            );    
+                            
+                       
+                            
+                                if($hoy == $dnot->format("Y-m-d H:i") ){
+                                    Log::info(   'Enttro' );                             
+                                }else{
+                                    Log::info(   'NO Enttro' );
+                                }   
                             }
                             $createPedio = false;
                             if(! $purchaseOrder){
@@ -262,83 +296,9 @@ class OrderManagementController extends Controller
                                 Log::info('$order: '. $order);
                             }
 
-                            $useridAdmin = 1;
-                            //'customer_id','branch_office_id','description','total_quantity','purchase_order_number','purchase_order_url'
-                            // ,'cut_date','status_id','users_create_id','users_lm_id')
                             if($createPedio){
-
-                                $lcp = DB::table('list_customer_product')
-                                        ->select(DB::raw('count(*) as listprod'))
-                                        ->leftJoin('list_customer_product_details', 'list_customer_product.id', '=', 'list_customer_product_details.list_customer_product_id')
-                                        ->where('list_customer_product.customer_id',  $order->customer_id)
-                                        ->when( $filter,function ($query, $filter) {
-                                            $query->where(
-                                                'list_customer_product.active', '=', '1')
-                                                ->where(
-                                                    'list_customer_product_details.active', '=',  '1'
-                                                  )
-                                                ->where(
-                                                'list_customer_product_details.suggest', '=',  '0'
-                                                );
-                                        })
-                                        ->get();
-                                Log::info('list_customer_product:: '. json_encode($lcp));
-                                $lcp = $lcp[0];
-                                Log::info('list_customer_product:: '. json_encode($lcp));
-                                if($lcp->listprod > 0) {
-                                        $parameters =  [
-                                            'customer_id' =>   $order->customer_id
-                                            ,'branch_office_id' => $branchOffice->id
-                                            ,'description'=> ''
-                                            ,'total_quantity' => '0'
-                                            ,'purchase_order_number' => ''
-                                            ,'purchase_order_url' =>  ''
-                                            ,'cut_date' =>  $CutDate
-                                            ,'status_id' => $statusIdCreated
-                                            ,'users_create_id' => $useridAdmin
-                                            ,'users_lm_id' => $useridAdmin
-                                        ];
-                                        $purCt = PurchaseOrder::create($parameters);
-                                        
-                                        $model = new ListCustomerProduct();
-                                        $id = 1;
-                                        $result = 0;
-                                        Log::info('data necesary: '. 'purCt->id ' . $purCt->id . ' purCt->customer_id '. $purCt->customer_id . ' customer->profile_id ' . $customer->profile_id . ' date' .  date_create($CutDate)->format('d-m-Y') );
-                                        
-                                        $dateparam = date_create($CutDate)->format('Y-m-d');
-                                        if ($customer->profile_id == 2){
-                                            $ordmtmp = new OrderManagement();
-                                            $ordmtmp->name_of_day = 'Lunes';
-                                            $ordmtmp->hour_of_day =  $order->hour_of_day;
-                                            $ordmtmp->from = date_create($CutDate)->format('Y-m-d');
-                                           
-                                            $newDate = $this->getCutDate( $ordmtmp);
-                                            Log::info('newDate:: '. $newDate);
-                                            $dateparam = date_create($newDate)->format('Y-m-d');
-                                        }
-                                        $paramst =  [ $purCt->id ,
-                                        $purCt->customer_id ,
-                                        $customer->profile_id,
-                                        $dateparam,
-                                        ]; 
-                                        Log::info( json_encode($paramst) . var_dump($paramst));
-                                        $data = DB::select(
-                                            'CALL create_list_customer_product_details(?, ?, ?, ?)',
-                                            $paramst
-                                        );
-                                    }
-                                           
-                                        
-                                // Log::info('$data: '.json_encode($data));
-
-                             //   $param = new ParameterBag($parameters);
-                              
-                            //    $param->add($parameters);
-                                //Encabezado y luego Detalle
-                                // Log::info('$param: '. json_encode($param));
-                               // return json_encode($parameters);
+                                $this->createPOrder($order,$customer,$branchOffice ,  $CutDate);
                             }
-                            
                         }
                     }
                 }
@@ -362,6 +322,104 @@ class OrderManagementController extends Controller
         }
     } 
 
+    public function getDateNotify($order,  $cutDay ){
+        
+        $lenWeekDays = 6;
+        $WeekDays = 7;
+        
+        $pDateCut = $this->getPositionDay($order->name_of_day);
+        $post= $this->getPositionDay( $order->initial_day_notify);
+        $pDateCut = $lenWeekDays - $pDateCut;
+        $pDateToday = $lenWeekDays - $post;
+        $dif = $pDateCut - $pDateToday;
+
+        if($dif >= 0){
+            $dif = $WeekDays- $dif;
+            $dif = $dif * -1;
+        }
+
+        $daysadd =  ( $dif ) .' days';
+        $datCut = date_create(  $cutDay);
+      
+        
+        $notDate = date('Y-m-d', strtotime($datCut->format('Y-m-d') . $daysadd ));
+        $notDate = $notDate  . ' ' .$order->notify_from;
+        $notDateDt = date_create($notDate)->format('d-m-Y H:i');
+
+        
+        return $notDateDt;
+
+    }
+
+    public function createPOrder($order,$customer,$branchOffice , $CutDate){
+        $filter = [
+            'branch_office_id' => $branchOffice->id
+            ,'status_id' => Status::$creado
+        ];
+        $lcp = DB::table('list_customer_product')
+        ->select(DB::raw('count(*) as listprod'))
+        ->leftJoin('list_customer_product_details', 'list_customer_product.id', '=', 'list_customer_product_details.list_customer_product_id')
+        ->where('list_customer_product.customer_id',  $order->customer_id)
+        ->when( $filter,function ($query, $filter) {
+            $query->where(
+                'list_customer_product.active', '=', '1')
+                ->where(
+                    'list_customer_product_details.active', '=',  '1'
+                  )
+                ->where(
+                'list_customer_product_details.suggest', '=',  '0'
+                );
+        })
+        ->get();
+        Log::info('list_customer_product:: '. json_encode($lcp));
+        $lcp = $lcp[0];
+        Log::info('list_customer_product:: '. json_encode($lcp));
+        
+        $useridAdmin = 1;
+        if($lcp->listprod > 0) {
+                $parameters =  [
+                    'customer_id' =>   $order->customer_id
+                    ,'branch_office_id' => $branchOffice->id
+                    ,'description'=> ''
+                    ,'total_quantity' => '0'
+                    ,'purchase_order_number' => ''
+                    ,'purchase_order_url' =>  ''
+                    ,'cut_date' =>  $CutDate
+                    ,'status_id' => Status::$creado
+                    ,'users_create_id' => $useridAdmin
+                    ,'users_lm_id' => $useridAdmin
+                ];
+                $purCt = PurchaseOrder::create($parameters);
+                
+                
+                Log::info('data necesary: '. 'purCt->id ' . $purCt->id . ' purCt->customer_id '. $purCt->customer_id . ' customer->profile_id ' . $customer->profile_id . ' date' .  date_create($CutDate)->format('d-m-Y') );
+                
+                $dateparam = date_create($CutDate)->format('Y-m-d');
+                if ($customer->profile_id == 2){
+                    $ordmtmp = new OrderManagement();
+                    $ordmtmp->name_of_day = 'Lunes';
+                    $ordmtmp->hour_of_day =  $order->hour_of_day;
+                    $ordmtmp->from = date_create($CutDate)->format('Y-m-d');
+                    $newDate = $this->getCutDate( $ordmtmp);
+                    $dateparam = date_create($newDate)->format('Y-m-d');
+                }
+                $paramst =  [ $purCt->id ,
+                $purCt->customer_id ,
+                $customer->profile_id,
+                $dateparam,
+                ]; 
+
+                $data = DB::select(
+                    'CALL create_list_customer_product_details(?, ?, ?, ?)',
+                    $paramst
+                );
+            }
+    }
+
+    public function valideSendMail($purchaseOrder){
+        $datetime1 = date_create($datetime1);
+        $datetime2 = date_create($hoy);
+    }
 
 
     public function getCutDate(OrderManagement $OrderManagement){
@@ -383,6 +441,7 @@ class OrderManagementController extends Controller
 
 
     }
+
 
 function determiteCut( $datetime, OrderManagement $OrderManagement ){
 

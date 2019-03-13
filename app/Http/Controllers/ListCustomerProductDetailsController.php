@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Product;
 use App\ListCustomerProduct;
 use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 class ListCustomerProductDetailsController extends Controller
 {
@@ -108,6 +111,70 @@ class ListCustomerProductDetailsController extends Controller
         }
         $response['message'] = 'ok';
         $response['values'] = $listcts;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+    }
+
+    public function showSuggest(Request $request)
+    {
+        try{
+        $user = null;
+          
+                // Log::info('$filter: '. $filter);
+        if ($request->session()->exists('user')) {
+
+        $user = $request->session()->get('user');
+       
+        
+        }else if ($request->user()){    
+        $user = $request->$request->user();
+  
+        }
+        if($user){
+
+                $filter = [
+                    'active' => 1,
+                    'suggest' => 1
+                ];
+                $listcts = DB::table('list_customer_product')
+                ->select('list_customer_product_details.*')
+                ->leftJoin('list_customer_product_details', 'list_customer_product.id', '=', 'list_customer_product_details.list_customer_product_id')
+                ->where('list_customer_product.customer_id',  $user->customer_id)
+                ->when( $filter,function ($query, $filter) {
+                    $query->where('list_customer_product_details.active', '=',  $filter['active'])
+                        ->where('list_customer_product_details.suggest', '=',  $filter['suggest']);})
+                ->orderBy('list_customer_product_details.priority')
+                ->get();
+                
+                
+                $max = sizeof($listcts);
+                $resutl = array();  
+                for($i = 0; $i < $max;$i++)
+                {
+                
+                    $lcpd= new   ListCustomerProductDetails( get_object_vars($listcts[$i]));
+                  
+                    $this->valideRelations($lcpd);
+                    $resutl[] =  $lcpd;
+                }
+         
+        }else{
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => 'User no exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+
+        } catch (Exception $e) {
+                
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $e->getMessage()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+        }
+
+        $response['message'] = 'ok';
+        $response['values'] =    ($resutl) ? $resutl : $listcts ;
         $response['user_id'] = 'PD';
         return response()->json($response,200);
     }

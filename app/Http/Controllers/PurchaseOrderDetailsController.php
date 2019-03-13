@@ -162,7 +162,7 @@ class PurchaseOrderDetailsController extends Controller
                             })
                             ->first();   
                 
-                Log::info( var_dump($purchaseOrder) . json_encode(  $purchaseOrder ) );
+           
 
             
                             $paramst =  [ 
