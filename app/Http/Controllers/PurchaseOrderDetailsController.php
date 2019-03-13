@@ -236,7 +236,7 @@ class PurchaseOrderDetailsController extends Controller
 
             
             $user = null;
-            $statusIdCreated = 1;
+          
                       // Log::info('$filter: '. $filter);
             if ($request->session()->exists('user')) {
        
@@ -250,34 +250,53 @@ class PurchaseOrderDetailsController extends Controller
 
             if(! $user == null ){
                  $rol = $user->rol_id; 
-                if($rol = Rol::$distribuidor){
+                if($rol == Rol::$distribuidor){
                     // Log::info('entro distribuidor' .  $rol );
 
                     $purchaseOrder =  DB::table('purchase_order')
                     ->orderBy('purchase_order.status_id','purchase_order.cut_date')
                     ->get(); 
-                    // $purchaseOrder->results;
-                     foreach($purchaseOrder as $pos){
-                        Log::info('entro distribuidor' .  var_dump($pos));
-                        // $this->valideRelations($pos);
+             
+       
+                        $max = sizeof($purchaseOrder);
+                    
+                        for($i = 0; $i < $max;$i++)
+                        {
+                        
+                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
                      }
 
+                
+
+                }else if($rol == Rol::$sucursal){
+                    $purchaseOrder = DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->limit(2)->get();                    
+                    $max = sizeof($purchaseOrder);
+                
+                    for($i = 0; $i < $max;$i++)
+                    {
+                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
+                    }
+                }else{
+                    Log::info('nooo entro ' .  $rol );
+
+                }
+                
                 $response['message'] = 'ok';
                 $response['values'] = $purchaseOrder;
                 $response['user_id'] = 'PD';
                 return response()->json($response,200);
 
-                }else if($rol == Rol::$sucursal){
-                    Log::info('entro sucursal' .  $rol );
-                    $purchaseOrder = PurchaseOrder::where('branch_office_id',$user->branch_office_cf_id)->limit(2)->get();
+               
+            }else{
 
-                    return  $purchaseOrder;
-                }else{
-                    Log::info('nooo entro ' .  $rol );
-
-                }
-
-                return $purchaseOrder;
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'User no exist'];
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
             }
 
         
@@ -294,18 +313,9 @@ class PurchaseOrderDetailsController extends Controller
         // foreach($podt as $po){
         //     $this->valideRelations($po);
         // }
-        if(! $podt){
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => 'No exist'];
-            $response['user_id'] = null;
-            return response()->json($response,404);
-        }
+    
      
 
-        $response['message'] = 'ok';
-        $response['values'] = $podt;
-        $response['user_id'] = 'PD';
-        return response()->json($response,200);
     }
 
 
@@ -331,10 +341,10 @@ class PurchaseOrderDetailsController extends Controller
         
             for($i = 0; $i < $max;$i++)
             {
-                $jspo = json_encode($lcd[$i]);
-                Log::info('editJson ' . $jspo);
+                // $jspo = json_encode($lcd[$i]);
+
                 $obpo = new PurchaseOrderDetails($lcd[$i]);
-                Log::info('obpo ' . $obpo);
+   
                 $filter = [
                     'product_id' => $obpo->product_id
                     ,'purchase_order_date' => $obpo->purchase_order_date
