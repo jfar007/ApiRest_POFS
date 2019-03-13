@@ -7,6 +7,16 @@ use Illuminate\Http\Request;
 
 class StatusController extends Controller
 {
+
+    // public static $creado = 1
+    public static $creado = 1;
+    public static $no_confirmado=2;
+    public static $generado=3;
+    public static $alistamiento=4;
+    public static $transito=5;
+    public static $entregado=6;
+
+
     /**
      * Display a listing of the resource.
      *

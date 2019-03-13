@@ -7,10 +7,12 @@ use App\Product;
 use App\PurchaseOrder;
 use App\OrderManagement;
 use App\User;
+use App\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+
 
 class PurchaseOrderDetailsController extends Controller
 {
@@ -241,15 +243,41 @@ class PurchaseOrderDetailsController extends Controller
                 $user = $request->session()->get('user');
                 Log::info('entro session' .  $user );
                 
-            }else if ($request->user()){
+            }else if ($request->user()){    
                 $user = $request->$request->user();
                 Log::info('entro request' .  $user );
-            
             }
 
             if(! $user == null ){
-                
+                 $rol = $user->rol_id; 
+                if($rol = Rol::$distribuidor){
+                    // Log::info('entro distribuidor' .  $rol );
 
+                    $purchaseOrder =  DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->get(); 
+                    // $purchaseOrder->results;
+                     foreach($purchaseOrder as $pos){
+                        Log::info('entro distribuidor' .  var_dump($pos));
+                        // $this->valideRelations($pos);
+                     }
+
+                $response['message'] = 'ok';
+                $response['values'] = $purchaseOrder;
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
+
+                }else if($rol == Rol::$sucursal){
+                    Log::info('entro sucursal' .  $rol );
+                    $purchaseOrder = PurchaseOrder::where('branch_office_id',$user->branch_office_cf_id)->limit(2)->get();
+
+                    return  $purchaseOrder;
+                }else{
+                    Log::info('nooo entro ' .  $rol );
+
+                }
+
+                return $purchaseOrder;
             }
 
         
@@ -261,11 +289,11 @@ class PurchaseOrderDetailsController extends Controller
         }
 
 
-        $podt = PurchaseOrderDetails::where('purchase_order_id', $id)->get();
+        // $podt = PurchaseOrderDetails::where('purchase_order_id', $id)->get();
 
-        foreach($podt as $po){
-            $this->valideRelations($po);
-        }
+        // foreach($podt as $po){
+        //     $this->valideRelations($po);
+        // }
         if(! $podt){
             $response['message'] = 'error';
             $response['values'] = ['error details' => 'No exist'];

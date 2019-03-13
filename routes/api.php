@@ -18,12 +18,12 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::middleware(['jwt.auth'])->group(function(){
-   
+  
 });
 Route::group(['middleware' => ['jwt.auth']], function(){
-   
-    Route::get('/u/{id}','UserController@show');//Get users
+
     
+   
 });
 
 //Requieren TOKEN
@@ -33,9 +33,9 @@ Route::group(['middleware' => ['jwt.auth']], function(){
 //Route::get('/uainfo','UserController@getAuthenticatedUserInfo');//Get users
 
 //Requieren TOKEN
-Route::get('/r','RolController@index');//Get rols
 Route::get('/r/{id}','RolController@show');//Get rol
-
+   
+// Route::get('/r','RolController@index');//Get rols
 
 Route::get('/u','UserController@index');//Get users
 Route::post('/u','UserController@store'); //Register
@@ -43,12 +43,13 @@ Route::get('/u/verify/{code}','UserController@verify');//From email
 Route::post('/u/rp/email','UserController@resetpassword');//Reset password and sent new user password
 Route::post('/u/lg','UserController@authenticate'); //Login and reset password, use password_new but new password
 Route::get('/u','UserController@index');//Get users
-// Route::get('/u/{id}','UserController@show');//Get users
+Route::get('/u/{id}','UserController@show');//Get users
 Route::post('/u/{id}','UserController@update');//Get users
 Route::get('/u/d/{id}','UserController@destroy');//Get users
+Route::get('/u/lt','UserController@logout');//Logout
 
-// Route::get('/r','RolController@index');//Get rols
-// Route::get('/r/{id}','RolController@show');//Get rol
+Route::get('/r','RolController@index');//Get rols
+Route::get('/r/{id}','RolController@show');//Get rol
 
 Route::get('/ct','CustomerController@index');//Get Customers
 Route::get('/ct/{id}','CustomerController@show');//Get Customer
@@ -114,3 +115,6 @@ Route::post('/pocst/{id}','PurchaseOrderDetailsController@chageStateSucursalUser
 Route::post('/pocst/{id}/{statusId}','PurchaseOrderDetailsController@chageStateDistribuidorUser');//Update State from SucursalUser
 
 Route::post('/popf/{id}','PurchaseOrderDetailsController@index');//Update State from SucursalUser
+
+Route::get('/posh','PurchaseOrderDetailsController@showPurchaseOrder');//Ver ultimos dos pedidos para la sucursal y ultimos 20 para distribuidor
+

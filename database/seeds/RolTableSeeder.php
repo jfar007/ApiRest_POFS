@@ -22,7 +22,7 @@ class RolTableSeeder extends Seeder
         ]);
 
         Rol::create([
-            'name' => 'Suscursal',
+            'name' => 'Sucursal',
             'active' => '1',
         ]);
     }

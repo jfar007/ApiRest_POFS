@@ -53,10 +53,12 @@ class UserTableSeeder extends Seeder
             'active' => '1'
             ]);
 
+            
+        $rolid = Rol::where('name', 'Suscursal')->value('id');
         User::create([ 
             'username' => 'fsduser1',
             'password' =>  Hash::make('Foodsolutions'),
-            'name' => 'Distribuidor de la Plataforma',
+            'name' => 'Sucursal de la Plataforma',
             'email' => 'no-reply2@foodsolutionsmarket.com',
             'branch_office' => 'all',
             'mobile_phone' => 'false',
@@ -74,7 +76,7 @@ class UserTableSeeder extends Seeder
         User::create([ 
             'username' => 'fsduser2',
             'password' =>  Hash::make('Foodsolutions'),
-            'name' => 'Distribuidor de la Plataforma',
+            'name' => 'Sucursal de la Plataforma',
             'email' => 'no-reply3@foodsolutionsmarket.com',
             'branch_office' => 'all',
             'mobile_phone' => 'false',
@@ -88,5 +90,7 @@ class UserTableSeeder extends Seeder
             'confirmation_code' => null,
             'active' => '1'
             ]);
+
+
     }
 }
