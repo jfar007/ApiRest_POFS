@@ -130,6 +130,7 @@ return [
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',
+            'email' => 'Por favor, escriba su usuario',
         ],
     ],
 

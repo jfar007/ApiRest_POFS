@@ -27,7 +27,6 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-
         $Users=User::all();
 
         foreach ($Users as $user)
@@ -71,13 +70,14 @@ class UserController extends Controller
                 $username = 'fs'. substr($name, 0, 2) . str_random(4);      
                 $username = strtolower($username);      
                 $user = User::where('username', $username)->first();
-                if (!$user)
+            if (!$user)
                     $x = false;       
         }
         $parameters =  ['username' =>  $username,
                         'password' =>$passtemp ,
                         'confirmation_code' => str_random(25)];
         $userpr->add($parameters);
+
         $user =  User::create($userpr->all());
 
         $register = 1;
@@ -100,25 +100,23 @@ class UserController extends Controller
          $response['user_id'] = 'PD';
          return response()->json($response,201);
 
-
     }
-
 
 
     public function verify($code){
 
         try{
-        $user = User::where('confirmation_code', $code)->first();
+                $user = User::where('confirmation_code', $code)->first();
 
-        if (! $user){
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => 'No exist'];
-            $response['user_id'] = null;
-            return response()->json($response,404);
-        }
-      
-        $user->confirmation_code = null;
-        $user->save();
+                if (! $user){
+                    $response['message'] = 'error';
+                    $response['values'] = ['error details' => 'No exist'];
+                    $response['user_id'] = null;
+                    return response()->json($response,404);
+                }
+
+                $user->confirmation_code = null;
+                $user->save();
     
         // return redirect('/')->with('notification', 'Has confirmado correctamente tu correo!');
         // return $user;
@@ -168,7 +166,6 @@ class UserController extends Controller
     }
                      
     public function  authenticate(Request $request){
-        
 
         try{
             $user = User::where('username', $request['username'])->first();
@@ -231,13 +228,13 @@ class UserController extends Controller
         }
         // $response = compact('tocken');
         // $response['user'] = $userrsp;
-        $request->session()->put('user', $user);
+   /*     $request->session()->put('user', $user);
         $this->valideRelations($user);
         $response['message'] = 'ok';
         $response['values'] = $user;
         $response['user_id'] = 'PD';
         $response['tocken'] = $tocken;
-        return response()->json($response,200);
+        return response()->json($response,200);*/
 
         // return  response()->json(['message' => 
         // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );
@@ -322,7 +319,6 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-
         try{
             $user = User::where('id', $id)->first();
             if (! $user){
@@ -373,7 +369,6 @@ class UserController extends Controller
     }
 
 
-    
     public function getAuthenticatedUser()
     {
             try {
@@ -399,8 +394,6 @@ class UserController extends Controller
             return response()->json(compact('user'));
     }
 
-
-    
     public function getAuthenticatedUserpl(Request $request )
     {
            
@@ -434,9 +427,6 @@ class UserController extends Controller
             
             return response()->json('msg');
     }
-
-
-   
 
        
     public function getAuthenticatedUserInfo(Request $request)

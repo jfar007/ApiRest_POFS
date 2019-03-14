@@ -109,7 +109,6 @@ class PurchaseOrderDetailsController extends Controller
      */
     public function store(Request $request)
     {
-
         try{
             $podetails = PurchaseOrderDetails::create($request->all());
             $this->valideRelations($podetails);
@@ -149,6 +148,7 @@ class PurchaseOrderDetailsController extends Controller
         foreach($podt as $po){
             $this->valideRelations($po);
         }
+
         if(! $podt){
             $response['message'] = 'error';
             $response['values'] = ['error details' => 'No exist'];
@@ -210,9 +210,6 @@ class PurchaseOrderDetailsController extends Controller
         } 
     }
 
-
-
-    
 
 
 }
