@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\PurchaseOrder;
+use App\User;
+use App\Status;
+use App\BranchOffice;
+use App\Customer;
+use Validator;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
+    
+    
     /**
      * Display a listing of the resource.
      *
@@ -72,9 +80,42 @@ class PurchaseOrderController extends Controller
      * @param  \App\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrder $purchaseOrder)
+    public function loadFileOrder(Request $request, $id)
     {
-        //
+        try{    
+            $validator = Validator::make($request->all(), [
+                'order' => 'file|mimes:pdf,doc,docx,xls,xlsx|max:2048']);            
+
+            if ($validator->fails()) {
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $validator->errors()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+            }
+            if(isset($request['order'])){
+                $file = $request->file('order');
+                $input['filename'] = time() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('/files');
+                $file->move($destinationPath, $input['filename']);
+                $request['purchase_order_url'] =  url("/files/{$input['filename']}");
+            }
+
+            $pord= PurchaseOrder::where('id',$id)->first();
+            $pord->fill($request->all())->save();
+            $this->valideRelations($pord);
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+            
+        $response['message'] = 'ok';
+        $response['values'] = $pord;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+
     }
 
     /**
@@ -100,6 +141,35 @@ class PurchaseOrderController extends Controller
         //
     }
 
+
+    public function valideRelations(PurchaseOrder $purchaseOrder)
+    {
+        if(isset($purchaseOrder['customer_id']) && !$purchaseOrder['customer_id'] == null) {
+            $customer = Customer::find($purchaseOrder->customer_id);
+            $purchaseOrder->customer()->associate($customer);
+        } 
+        if(isset($purchaseOrder['users_lm_id']) && !$purchaseOrder['users_lm_id'] == null) {
+            $users_lm = User::find($purchaseOrder->users_lm_id);
+            $purchaseOrder->users_lm()->associate($users_lm);
+        } 
+
+        
+        if(isset($purchaseOrder['branch_office_id']) && !$purchaseOrder['branch_office_id'] == null) {
+            $branch_office = BranchOffice::find($purchaseOrder->branch_office_id);
+            $purchaseOrder->branch_office()->associate($branch_office);
+        } 
+
+          
+        if(isset($purchaseOrder['status_id']) && !$purchaseOrder['status_id'] == null) {
+            $status = Status::find($purchaseOrder->status_id);
+            $purchaseOrder->status()->associate($status);
+        } 
+
+        if(isset($purchaseOrder['users_create_id']) && !$purchaseOrder['users_create_id'] == null) {
+            $users_ct = User::find($purchaseOrder->users_create_id);
+            $purchaseOrder->users_create()->associate($users_ct);
+        } 
+    }
 
 
         

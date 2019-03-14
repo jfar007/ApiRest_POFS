@@ -247,36 +247,36 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    // public function show($id)
-    // {
-    //     $user = User::where('id', $id)->first();
-    //     if (! $user){
-    //         $response['message'] = 'error';
-    //         $response['values'] = ['error details' => 'No exist'];
-    //         $response['user_id'] = null;
-    //         return response()->json($response,404);
-    //     }
-
-    //     $user = $this->valideRelations($user);
-    //     $response['message'] = 'ok';
-    //     $response['values'] = $user;
-    //     $response['user_id'] = 'PD';
-    //     return response()->json($response,200);
-    //     return $user;
-
-    // }
-
-    public function show(Request $request,$id)
+    public function show($id)
     {
-        Log::info('show!'. json_encode( $request->session()));
-        //  $value = $request->session()->get('user');
-        // $user = User::where('email', $value->email)->first();
-        Log::info('show! Class UserController' . json_encode( $request->session()->all()) );
-        $user = $request->session()->get('user');
-        $userjs =  $user->email;
-        Log::info('show! Class UserController' . $userjs );
-        return response()->json(  $request->user() );
+        $user = User::where('id', $id)->first();
+        if (! $user){
+        $response['message'] = 'error';
+            $response['values'] = ['error details' => 'No exist'];
+            $response['user_id'] = null;
+            return response()->json($response,404);
+        }
+
+        $user = $this->valideRelations($user);
+        $response['message'] = 'ok';
+        $response['values'] = $user;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
+        return $user;
+
     }
+
+    // public function show(Request $request,$id)
+    // {
+    //     Log::info('show!'. json_encode( $request->session()));
+    //     //  $value = $request->session()->get('user');
+    //     // $user = User::where('email', $value->email)->first();
+    //     Log::info('show! Class UserController' . json_encode( $request->session()->all()) );
+    //     $user = $request->session()->get('user');
+    //     $userjs =  $user->email;
+    //     Log::info('show! Class UserController' . $userjs );
+    //     return response()->json(  $request->user() );
+    // }
 
 
     public function valideRelations(User $user){

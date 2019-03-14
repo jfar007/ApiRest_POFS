@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\PurchaseOrderDetails;
 use App\Product;
 use App\PurchaseOrder;
+use App\OrderManagement;
+use App\User;
+use App\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+
 
 class PurchaseOrderDetailsController extends Controller
 {
@@ -17,12 +21,23 @@ class PurchaseOrderDetailsController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+     public function index(Request $request)
+    // public function index(Request $request, $profile_id)
     {
 
+        $resutl = array();  
+        $temp = array();
         try{
             $bofid = null;
-            Log::info('index ' . json_encode($request->session()->get('user')));
+            // Log::info('index ' . json_encode($request->session()->get('user')));
+            // if($profile_id){
+            //     if($profile_id == 1){
+            //         $user = User::where('customer_id',1);  
+            //     }else{
+            //         $user = User::where('customer_id',2); 
+            //     }                
+            // }
+            // else 
             if ($request->session()->exists('user')) {
                 
                 $user = $request->session()->get('user');
@@ -34,7 +49,7 @@ class PurchaseOrderDetailsController extends Controller
                 $bofid =  $user->branch_office_cf_id;
             }
 
-            Log::info('index ' . $bofid);
+
             $podt= '';
             if(! $bofid == null ){
                 $filter = [];
@@ -57,8 +72,7 @@ class PurchaseOrderDetailsController extends Controller
                     return response()->json($response,204);
                 }
                
-                $resutl = array();
-                $temp = array();
+               
                 foreach($podt as $po){
                     $podtf = new PurchaseOrderDetails((array) $po);
                     $this->valideRelations($podtf);
@@ -86,11 +100,13 @@ class PurchaseOrderDetailsController extends Controller
 
 
         $response['message'] = 'ok';
-        $response['values'] =  $resutl;
+        $response['values'] =  $resutl ==  null ? '' : $resutl;
         $response['user_id'] = 'PD';
         return response()->json($response,200);
     }
 
+
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -110,8 +126,62 @@ class PurchaseOrderDetailsController extends Controller
     public function store(Request $request)
     {
         try{
-            $podetails = PurchaseOrderDetails::create($request->all());
-            $this->valideRelations($podetails);
+
+            
+            $user = null;
+            $statusIdCreated = 1;
+                      // Log::info('$filter: '. $filter);
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+                Log::info('entro session' .  $user );
+                
+            }else if ($request->user()){
+                $user = $request->$request->user();
+                Log::info('entro request' .  $user );
+            
+            }
+
+            if(! $user == null ){
+
+
+                $filter = [
+                    'branch_office_id' => $user->branch_office_cf_id
+                    ,'status_id' => $statusIdCreated
+                ];
+                // Log::info('$filter: '. $filter);
+                $purchaseOrder =  DB::table('purchase_order')
+                            ->where('customer_id', '=', $user->customer_id )
+                            ->when( $filter,function ($query, $filter) {
+                                $query->where(
+                                    'branch_office_id', '=', $filter['branch_office_id'] )
+                                      ->where(
+                                          'status_id', '=',  $filter['status_id']
+                                        );
+                            })
+                            ->first();   
+                
+           
+
+            
+                            $paramst =  [ 
+                            $purchaseOrder->id ,
+                            $request->product_id
+                        ]; 
+                            $data = DB::select(
+                                'CALL add_product_to_purchase_order(?, ?)',
+                                $paramst
+                            );
+
+                $pohe= PurchaseOrder::where('id',  $purchaseOrder->id)->first();
+                if($pohe){
+                    $pohe->users_lm_id =  $user->id;
+                    $pohe->save();
+                }
+
+            }
+
+
         }  catch (Exception $e) {
             $response['message'] = 'error';
             $response['values'] = ['error details' => $e->getMessage()];
@@ -119,22 +189,11 @@ class PurchaseOrderDetailsController extends Controller
             return response()->json($response,415);
         }
 
-        
-        $response['message'] = 'ok';
-        $response['values'] = $podetails;
-        $response['user_id'] = 'PD';
-        return response()->json($response,201);
+        return $this->index($request); 
 
     }
 
-    public function storeJson(Request $request)
-    {
-        $data = json_decode($request->getContent(), true);
-        $first= true;
-        foreach($data['values'] as $lcd){
-            
-        }
-    }
+
     /**
      * Display the specified resource.
      *
@@ -164,15 +223,175 @@ class PurchaseOrderDetailsController extends Controller
     }
 
 
+
+       /**
+     * Display the specified resource.
+     *
+     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
+     * @return \Illuminate\Http\Response
+     */
+    public function showPurchaseOrder(Request $request)
+    {
+        try{
+
+            
+            $user = null;
+          
+                      // Log::info('$filter: '. $filter);
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+                Log::info('entro session' .  $user );
+                
+            }else if ($request->user()){    
+                $user = $request->$request->user();
+                Log::info('entro request' .  $user );
+            }
+
+            if(! $user == null ){
+                 $rol = $user->rol_id; 
+                if($rol == Rol::$distribuidor){
+                    // Log::info('entro distribuidor' .  $rol );
+
+                    $purchaseOrder =  DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->get(); 
+             
+       
+                        $max = sizeof($purchaseOrder);
+                    
+                        for($i = 0; $i < $max;$i++)
+                        {
+                        
+                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
+                     }
+
+                
+
+                }else if($rol == Rol::$sucursal){
+                    $purchaseOrder = DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->limit(2)->get();                    
+                    $max = sizeof($purchaseOrder);
+                
+                    for($i = 0; $i < $max;$i++)
+                    {
+                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
+                    }
+                }else{
+                    Log::info('nooo entro ' .  $rol );
+
+                }
+                
+                $response['message'] = 'ok';
+                $response['values'] = $purchaseOrder;
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
+
+               
+            }else{
+
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'User no exist'];
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
+            }
+
+        
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+
+        // $podt = PurchaseOrderDetails::where('purchase_order_id', $id)->get();
+
+        // foreach($podt as $po){
+        //     $this->valideRelations($po);
+        // }
+    
+     
+
+    }
+
+
     /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseOrderDetails $purchaseOrderDetails)
+    public function editJson(Request $request,$id)
     {
-        //
+        try{
+
+        
+        $data = json_decode($request->getContent(), true);
+        $first= true;
+        $tempint=0;
+        $pushOrder= 0;
+        foreach($data['values'] as $lcd){
+
+       
+            $max = sizeof($lcd);
+        
+            for($i = 0; $i < $max;$i++)
+            {
+                // $jspo = json_encode($lcd[$i]);
+
+                $obpo = new PurchaseOrderDetails($lcd[$i]);
+   
+                $filter = [
+                    'product_id' => $obpo->product_id
+                    ,'purchase_order_date' => $obpo->purchase_order_date
+                    ];
+                $pushOrder = $obpo->purchase_order_id;
+                $purchaseOrder = 
+                DB::table('purchase_order_details')
+                ->where('purchase_order_id',  $obpo->purchase_order_id)
+                ->when( $filter,function ($query, $filter) {
+                        $query->where('product_id', $filter['product_id'])
+                                ->where('purchase_order_date', $filter['purchase_order_date']);
+                        })
+                ->update(['quantity' => $obpo->quantity]);                
+            }
+        }
+
+            $userid = null;
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+                Log::info('entro session' .  $user );
+                $userid =  $user->id;
+             
+            }else if ($request->user()){
+                $user = $request->$request->user();
+                Log::info('entro request' .  $user );
+                $userid =  $user->id;
+            }
+
+            if(! $userid == null ){
+                $pohe= PurchaseOrder::where('id', $pushOrder)->first();
+                if($pohe){
+                    $pohe->users_lm_id =  $userid;
+                    $pohe->save();
+                }
+            }
+
+            
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+       
+        return $this->index($request);
+
     }
 
     /**
@@ -208,6 +427,94 @@ class PurchaseOrderDetailsController extends Controller
             $purchaseOrder = PurchaseOrder::find($purchaseOrderdt->purchase_order_id);
             $purchaseOrderdt->purchase_order()->associate($purchaseOrder);
         } 
+    }
+
+    public function chageStateSucursalUser(Request $request, $id){
+    try{
+
+        $user = null;
+        if ($request->session()->exists('user')) {
+            $user = $request->session()->get('user');
+        }else if ($request->user()){
+            $user = $request->$request->user();
+        }
+
+        $stateGenerado = 2;
+
+        $pohe= PurchaseOrder::where('id', $id)->first();
+        if($pohe){
+            $pohe->users_lm_id =   $user->id;
+            $pohe->status_id = $stateGenerado;
+            $pohe->save();
+        }
+        
+        $orderMng = OrderManagement::where('customer_id', $user->customer_id );
+        
+        $filter = [
+            'task_id' => 1,
+            'active' => 1
+            ];
+        $daysadd = ' + 1 days';
+
+        $cutDate =  date_create($pohe->cut_date)->format('Y-m-d');
+        $newCutDate = date('Y-m-d',  strtotime($cutDate . $daysadd )); 
+        $orderMng = 
+        DB::table('order_management')
+        ->where('customer_id',   $user->customer_id )
+        ->when( $filter,function ($query, $filter) {
+                $query->where('active', $filter['active'])
+                      ->where('task_id', $filter['task_id']);
+                })
+        ->update(['from' => $newCutDate]);    
+
+    }  catch (Exception $e) {
+        $response['message'] = 'error';
+        $response['values'] = ['error details' => $e->getMessage()];
+        $response['user_id'] = 'PD';
+        return response()->json($response,415);
+    }
+
+        
+    $response['message'] = 'ok';
+    $response['values'] = 'ok';
+    $response['user_id'] = 'PD';
+    return response()->json($response,200);
+
+    }
+
+    public function chageStateDistribuidorUser(Request $request, $id, $statusId){
+        try{
+
+            $userid = null;
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+                $userid =  $user->id;
+             
+            }else if ($request->user()){
+                $user = $request->$request->user();
+                $userid =  $user->id;
+            }
+    
+            $pohe= PurchaseOrder::where('id', $id)->first();
+    
+            if($pohe){
+                $pohe->users_lm_id =  $userid;
+                $pohe->status_id = $statusId;
+                $pohe->save();
+            }
+            
+
+        }  catch (Exception $e) {
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $e->getMessage()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+        }
+        $response['message'] = 'ok';
+        $response['values'] = 'ok';
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
     }
 
 
