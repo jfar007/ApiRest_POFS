@@ -776,3 +776,5 @@ ALTER TABLE users
   FOREIGN KEY (rol_id)
     REFERENCES rol(id)
     ON DELETE CASCADE;
+	
+ALTER TABLE `list_customer_product_details` ADD UNIQUE( `list_customer_product_id`, `product_id`); 

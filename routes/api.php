@@ -107,7 +107,7 @@ Route::get('/oma','OrderManagementController@orderManagement');//Get OrderManage
 
 Route::post('/po','PurchaseOrderDetailsController@store');//Create one PurchaseOrderDetails // Se agrega productos (Sugeridos) a pedido 
 Route::get('/po/{id}','PurchaseOrderDetailsController@show');//Get PurchaseOrderDetails
-Route::get('/po','PurchaseOrderDetailsController@index');//Get PurchaseOrderDetails
+Route::get('/po','PurchaseOrderDetailsController@index');//Get PurchaseOrderDetails (Pedidos por sucursal)
 
 Route::post('/po/{id}','PurchaseOrderDetailsController@editJson');//Post PurchaseOrderDetails
 
@@ -119,3 +119,8 @@ Route::post('/popf/{id}','PurchaseOrderDetailsController@index');//Update State 
 Route::get('/posh','PurchaseOrderDetailsController@showPurchaseOrder');//Ver ultimos dos pedidos para la sucursal y ultimos 20 para distribuidor
 
 Route::post('/pofl/{id}','PurchaseOrderController@loadFileOrder');
+
+Route::get('/rpo','PurchaseOrderDetailsController@showPOrders');//Reporte pedidos Filtro (Sucursal, fecha inicial, fecha final)
+
+Route::get('/podtpdf/{id}/{bo}','PurchaseOrderDetailsController@generatePDF');//Reporte pedidos Filtro (Sucursal, fecha inicial, fecha final)
+

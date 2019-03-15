@@ -22,6 +22,7 @@ class VerifyRegister extends Mailable
      public $user;
      public $register;
 
+
     public function __construct(User $user,  $register)
     {
         $this->user = $user;
@@ -41,7 +42,7 @@ class VerifyRegister extends Mailable
             'username' => $this->user->username,
             'password' => $this->user->password,
             'confirmation_code' => $this->user->confirmation_code,
-            'register' => $this->register,
+            'register' => $this->register            
         ]);
 
     }

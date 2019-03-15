@@ -18,6 +18,7 @@ class CreateCustomerTable extends Migration
             $table->string('name',100);
             $table->string('main_phone',20);
             $table->string('main_address',50);
+            $table->string('logo_url',150);
             $table->unsignedInteger('profile_id');
             $table->foreign('profile_id')
                 ->references('id')->on('profile')

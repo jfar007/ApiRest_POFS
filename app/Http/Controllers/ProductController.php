@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Validator;
 use Illuminate\Support\Facades\URL;
 
+
 class ProductController extends Controller
 {
 
