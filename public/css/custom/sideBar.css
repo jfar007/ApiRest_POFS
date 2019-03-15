@@ -1,0 +1,34 @@
+.left_col { background:#662482 !important; }
+
+.nav.side-menu>li.active>a {
+    text-shadow: rgba(0,0,0,.25) 0 -1px 0;
+    background: #6D00C1;
+    box-shadow: rgba(0,0,0,.25) 0 1px 0, inset rgba(255,255,255,.16) 0 1px 0;
+}
+
+.nav.side-menu>li.active, .nav.side-menu>li.current-page {
+    border-right: 5px solid #6D00C1;
+}
+
+.nav-md ul.nav.child_menu li:before {
+    background: #fff;
+}
+
+/*#new-product-content.x_content{
+    display:none;
+}*/
+
+.top_nav .navbar-right {
+
+    width: auto !important;
+}
+
+#logo-sections .nav-sm .navbar.nav_title {
+
+    width: auto !important;
+}
+
+/*
+.nav-sm .navbar.nav_title{display:none !important;}
+
+#logo-sections { display: none !important;}*/

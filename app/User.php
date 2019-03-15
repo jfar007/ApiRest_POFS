@@ -19,7 +19,7 @@ class User extends Authenticatable  implements JWTSubject
 
         
     public function rol(){
-        return $this->belongsTo(Rol::class); 
+        return $this->belongsTo(Rol::class);
         
     }
 
@@ -41,6 +41,32 @@ class User extends Authenticatable  implements JWTSubject
 	// 	// return !isset($rol)  && $this->rol_id == null ? null : $rol->nombre;
     //     return $rol->nombre;
     // }
+
+
+    public function getRememberToken()
+    {
+        return '';
+    }
+
+    public function setRememberToken($value)
+    {
+    }
+
+    public function getRememberTokenName()
+    {
+        // just anything that's not actually on the model
+        return 'trash_attribute';
+    }
+
+    /**
+     * Fake attribute setter so that Guard doesn't complain about
+     * a property not existing that it tries to set.
+     *
+     * Does nothing, obviously.
+     */
+    public function setTrashAttributeAttribute($value)
+    {
+    }
     
     public function getJWTIdentifier()
     {

@@ -72,7 +72,8 @@ Route::get('/un','UnitController@index');//Get units
 Route::get('/un/{id}','UnitController@show');//Get unit 
 
 Route::get('/cg','CategoryController@index');//Get Categorys
-Route::get('/cg/{id}','CategoryController@show');//Get Category 
+Route::get('/cg/{id}','CategoryController@show');//Get Category
+Route::put('/cg/{id}','CategoryController@update');//Get Category
 
 
 Route::get('/pt','ProductController@index');//Get Products

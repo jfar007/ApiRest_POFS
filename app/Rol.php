@@ -14,4 +14,8 @@ class Rol extends Model
     public static $sucursal = 3;
     
 
+    public function users(){
+        return $this->hasMany(User::class);
+    }
+
 }

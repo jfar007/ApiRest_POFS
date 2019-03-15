@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Authenticate;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -34,6 +37,25 @@ class LoginController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest')->except('logout');
+/*       $this->middleware('guest')->except('logout');*/
     }
+
+
+
+    public function login(Authenticate $request)
+    {
+      /*  $credentials =  $this->validate($request, [
+           'email' =>  'email|required|string',
+           'password' =>  'required|string'
+        ]);*/
+
+        if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+
+                return  view('admin.client.dashboardclient');
+        }
+
+        return back()->withErrors(['username' => 'credenciales incorrectas'])->withInput(request(['username']));
+
+    }
+
 }
