@@ -18,7 +18,7 @@
 
     <p>Hola  {{ $user->name }}</p>
     
-    <p>Genero el pedido {{ $pushOrderData['pedido'] }}. El adjunto no representa aceptaci&oacute;n para el mismo, es necesario generar la Orden de Compra y que esta sea cargada en la plataforma.</p>
+    <p>Genero el pedido {{ $pushOrderData['pedido'] }}. El adjunto no representa aceptaci&oacute;n del mismo, es necesario generar la Orden de Compra y que esta sea cargada en la plataforma.</p>
 
 @endif
 

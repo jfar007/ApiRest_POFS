@@ -228,13 +228,13 @@ class UserController extends Controller
         }
         // $response = compact('tocken');
         // $response['user'] = $userrsp;
-   /*     $request->session()->put('user', $user);
+       $request->session()->put('user', $user);
         $this->valideRelations($user);
         $response['message'] = 'ok';
         $response['values'] = $user;
         $response['user_id'] = 'PD';
         $response['tocken'] = $tocken;
-        return response()->json($response,200);*/
+        return response()->json($response,200);
 
         // return  response()->json(['message' => 
         // 'Successfully ' ,'user' => $request->all() , 'userfn' => $user,'afi' => ($user->confirmed==false) ,'afi2' => !isset( $user->confirmation_code), 'userlg' => $request['username']] );

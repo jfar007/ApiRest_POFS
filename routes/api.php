@@ -117,7 +117,7 @@ Route::post('/pocst/{id}/{statusId}','PurchaseOrderDetailsController@chageStateD
 
 Route::post('/popf/{id}','PurchaseOrderDetailsController@index');//Update State from SucursalUser
 
-Route::get('/posh','PurchaseOrderDetailsController@showPurchaseOrder');//Ver ultimos dos pedidos para la sucursal y ultimos 20 para distribuidor
+Route::get('/posh','PurchaseOrderController@show');//Ver ultimos dos pedidos para la sucursal y ultimos 20 para distribuidor
 
 Route::post('/pofl/{id}','PurchaseOrderController@loadFileOrder');
 

@@ -249,38 +249,6 @@ class OrderManagementController extends Controller
                                
                                $this->sendMail($order, $CutDate, $purchaseOrder, $purchaseOrderDt, $branchOffice);
                                
-                                // $hoy = date("Y-m-d H:i");
-                                // $dnot =  $this->getDateNotify($order,  $CutDate);
-                                // $dnot =date_create($dnot);
-                                
-                           
-                                // if($hoy > $dnot->format("Y-m-d") ){
-                                //         if($this->dateDifference($hoy,$dnot->format("Y-m-d H:i")) == 0){
-                                            
-                                //             $pushOrderData = [
-                                //                 'pedido' => $purchaseOrder->id ,
-                                //                 'dia' =>  $purchaseOrderDt->format("d-m-Y"),
-                                //                 'hora' => $purchaseOrderDt->format("H:i")
-                                //             ]; 
-                                            
-                                //             $index= 1;
-                                //             $filter;
-                                //             $emails = DB::table('users')
-                                //                             ->select('email')
-                                //                             ->where( 'branch_office_cf_id' ,$branchOffice->id)
-                                //                             ->when( $filter,function ($query, $filter) {
-                                //                                 $query->where('active', '=', '1');
-                                //                             })
-                                //                             ->get();
-                                     
-                                //             if($emailsSize > 0){
-                                //                 $user = new User();
-                                //                 $message = new PurchaseOrderNotify($user, $index, $pushOrderData );
-                                //                 $message->subject('Pedido ' . $purchaseOrder->id . ' Food Solutions');
-                                //                 Mail::bcc($emails)->send($message);     
-                                //             }
-                                //         }                                                           
-                                // }
                             }
                             $createPedio = false;
                             if(! $purchaseOrder){

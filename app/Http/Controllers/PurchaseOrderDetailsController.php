@@ -232,100 +232,7 @@ class PurchaseOrderDetailsController extends Controller
 
 
 
-       /**
-     * Display the specified resource.
-     *
-     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
-     * @return \Illuminate\Http\Response
-     */
-    public function showPurchaseOrder(Request $request)
-    {
-        try{
-
-            
-            $user = null;
-          
-                      // Log::info('$filter: '. $filter);
-            if ($request->session()->exists('user')) {
-       
-                $user = $request->session()->get('user');
-                Log::info('entro session' .  $user );
-                
-            }else if ($request->user()){    
-                $user = $request->$request->user();
-                Log::info('entro request' .  $user );
-            }
-
-            if(! $user == null ){
-                 $rol = $user->rol_id; 
-                if($rol == Rol::$distribuidor){
-                    // Log::info('entro distribuidor' .  $rol );
-
-                    $purchaseOrder =  DB::table('purchase_order')
-                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
-                    ->get(); 
-             
-       
-                        $max = sizeof($purchaseOrder);
-                    
-                        for($i = 0; $i < $max;$i++)
-                        {
-                        
-                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
-                        $this->valideRelations($por);
-                     }
-
-                
-
-                }else if($rol == Rol::$sucursal){
-                    $purchaseOrder = DB::table('purchase_order')
-                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
-                    ->limit(2)->get();                    
-                    $max = sizeof($purchaseOrder);
-                
-                    for($i = 0; $i < $max;$i++)
-                    {
-                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
-                        $this->valideRelations($por);
-                    }
-                }else{
-                    Log::info('nooo entro ' .  $rol );
-
-                }
-                
-                $response['message'] = 'ok';
-                $response['values'] = $purchaseOrder;
-                $response['user_id'] = 'PD';
-                return response()->json($response,200);
-
-               
-            }else{
-
-                $response['message'] = 'error';
-                $response['values'] = ['error details' => 'User no exist'];
-                $response['user_id'] = 'PD';
-                return response()->json($response,200);
-            }
-
-        
-        }  catch (Exception $e) {
-            $response['message'] = 'error';
-            $response['values'] = ['error details' => $e->getMessage()];
-            $response['user_id'] = 'PD';
-            return response()->json($response,415);
-        }
-
-
-        // $podt = PurchaseOrderDetails::where('purchase_order_id', $id)->get();
-
-        // foreach($podt as $po){
-        //     $this->valideRelations($po);
-        // }
     
-     
-
-    }
-
 
        /**
      * Muestra pedidos con filtro a partir de la sucursal (Branch Office), Fecha Inicial y Fecha Final
@@ -532,63 +439,38 @@ class PurchaseOrderDetailsController extends Controller
             $pohe->save();
         }
         
-        // $filter = [
-        //     'task_id' => 1,
-        //     'active' => 1
-        //     ];
-        // $daysadd = ' + 1 days';
+        $filter = [
+            'task_id' => 1,
+            'active' => 1
+            ];
+        $daysadd = ' + 1 days';
 
-        // $cutDate =  date_create($pohe->cut_date)->format('Y-m-d');
-        // $newCutDate = date('Y-m-d',  strtotime($cutDate . $daysadd )); 
-        // $orderMng = 
-        // DB::table('order_management')
-        // ->where('customer_id',   $user->customer_id )
-        // ->when( $filter,function ($query, $filter) {
-        //         $query->where('active', $filter['active'])
-        //               ->where('task_id', $filter['task_id']);
-        //         })
-        // ->update(['from' => $newCutDate]);    
+        $cutDate =  date_create($pohe->cut_date)->format('Y-m-d');
+        $newCutDate = date('Y-m-d',  strtotime($cutDate . $daysadd )); 
+        $orderMng = 
+        DB::table('order_management')
+        ->where('customer_id',   $user->customer_id )
+        ->when( $filter,function ($query, $filter) {
+                $query->where('active', $filter['active'])
+                      ->where('task_id', $filter['task_id']);
+                })
+        ->update(['from' => $newCutDate]);    
         
         //Elimar items con cantidad 0
 
-        // DB::table('purchase_order_details')
-        // ->where('purchase_order_id',  $id)
-        // ->when( $filter,function ($query, $filter) {
-        //         $query->where('quantity','=' ,'0');
-        //         })
-        // ->delete();    
+        DB::table('purchase_order_details')
+        ->where('purchase_order_id',  $id)
+        ->when( $filter,function ($query, $filter) {
+                $query->where('quantity','=' ,'0');
+                })
+        ->delete();    
 
 
         //Enviar email
 
     
         $this->generateandSendPDF( $pohe->id, $pohe->branch_office_id, $user, $pohe);
-      
-    
-
-            // if(!$podt){
-            //     $response['message'] = 'error';
-            //     $response['values'] = ['error details' => 'Respuesta a una petición exitosa que no devuelve datos.'];
-            //     $response['user_id'] = null;
-            //     return response()->json($response,204);
-            // }
-        
-        
-            // foreach($podt as $po){
-            //     $podtf = new PurchaseOrderDetails((array) $po);
-            //     $this->valideRelations($podtf);
-            //     if(isset($resutl) && array_key_exists($podtf->purchase_order_date, $resutl))
-            //     {
-            //         $temp[] = $podtf;
-            //         $resutl[$podtf->purchase_order_date] =  $temp;
-            //     }
-            //     else{
-            //         $temp = array();
-            //         $temp[] = $podtf;
-            //         $resutl[$podtf->purchase_order_date] =  $temp;
-            //     }
-            // }
-            
+          
 
 
     }  catch (Exception $e) {
