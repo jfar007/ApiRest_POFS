@@ -10,6 +10,8 @@ use \Symfony\Component\HttpFoundation\ParameterBag;
 use Illuminate\Database\Eloquent\Collection;
 // use Illuminate\Contracts\Support\Arrayable;
 Use Exception;
+use Validator;
+use Illuminate\Support\Facades\URL;
 
 class CustomerController extends Controller
 {
@@ -70,6 +72,24 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
     try{
+
+        $validator = Validator::make($request->all(), [
+            'logo' => 'image|mimes:jpg,jpeg,png,gif|max:2048']);            
+
+        if ($validator->fails()) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $validator->errors()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+        if(isset($request['logo'])){
+            $image = $request->file('logo');
+            $input['imagename'] = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('/images');
+            $image->move($destinationPath, $input['imagename']);
+            $request['logo_url'] =  url("/images/{$input['imagename']}");
+        }
+
         $customer = Customer::create($request->all());
 
         $this->valideRelations($customer);
@@ -150,7 +170,27 @@ class CustomerController extends Controller
     public function update(Request $request,  $id)
     {
 
-        try{    
+        try{   
+            
+            
+            $validator = Validator::make($request->all(), [
+                'logo' => 'image|mimes:jpg,jpeg,png,gif|max:2048']);            
+
+            if ($validator->fails()) {
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => $validator->errors()];
+                $response['user_id'] = 'PD';
+                return response()->json($response,415);
+            }
+            if(isset($request['logo'])){
+                $image = $request->file('logo');
+                $input['imagename'] = time() . '.' . $image->getClientOriginalExtension();
+                $destinationPath = public_path('/images');
+                $image->move($destinationPath, $input['imagename']);
+                $request['logo_url'] =  url("/images/{$input['imagename']}");
+            }
+
+            
             $customer=Customer::where('id', $id)->first();
             if(! $customer){
                 $response['message'] = 'error';

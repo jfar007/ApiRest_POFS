@@ -9,12 +9,14 @@ use App\Customer;
 use App\BranchOffice;
 use App\PurchaseOrder;
 use App\Status;
+use App\User;
 use App\ListCustomerProduct;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use \Symfony\Component\HttpFoundation\ParameterBag;
-
+use App\Mail\PurchaseOrderNotify;
+use Mail;
 
 
 class OrderManagementController extends Controller
@@ -245,37 +247,8 @@ class OrderManagementController extends Controller
                                 $dCutDate = date_create($CutDate);
                                 //      //Validar envio de Recordatorio
                                
-                                $hoy = date("Y-m-d H:i");
-                                // $hoy = date_create($hoy);
-                                $dnot =  $this->getDateNotify($order,  $CutDate);
-                                $dnot =date_create($dnot);
-                                
-                                // $diff=date_diff($hoy,$dnot->format("Y-m-d H:i"));
-                                Log::info('Not: ' . var_dump( $hoy) . 'ot ' .   var_dump( $dnot) . ' dmp ' . var_dump( $purchaseOrderDt)
-                                // .  $this->dateDifference($hoy,$dnot) 
-                                . '$hoy' . $hoy
-                                // . ' $dnot '  . $dnot 
-                                . ' - '
-                                . $hoy 
-                                . ' - '
-                                . $dnot->format("Y-m-d H:i") 
-                                . ' - '
-                                . ($hoy > $dnot->format("Y-m-d H:i") ) 
-                                . ' - '
-                                . ($hoy ==  $dnot) 
-                                . ' - '
-                                . ($hoy <  $purchaseOrderDt)
-                             
-                       
-                            );    
-                            
-                       
-                            
-                                if($hoy == $dnot->format("Y-m-d H:i") ){
-                                    Log::info(   'Enttro' );                             
-                                }else{
-                                    Log::info(   'NO Enttro' );
-                                }   
+                               $this->sendMail($order, $CutDate, $purchaseOrder, $purchaseOrderDt, $branchOffice);
+                               
                             }
                             $createPedio = false;
                             if(! $purchaseOrder){
@@ -321,6 +294,41 @@ class OrderManagementController extends Controller
             return response()->json($response,415);
         }
     } 
+
+    public function sendMail($order, $CutDate, $purchaseOrder, $purchaseOrderDt, $branchOffice ){
+        $hoy = date("Y-m-d H:i");
+        $dnot =  $this->getDateNotify($order,  $CutDate);
+        $dnot =date_create($dnot);
+        
+   
+        if($hoy > $dnot->format("Y-m-d") ){
+                if($this->dateDifference($hoy,$dnot->format("Y-m-d H:i")) == 0){
+                    
+                    $pushOrderData = [
+                        'pedido' => $purchaseOrder->id ,
+                        'dia' =>  $purchaseOrderDt->format("d-m-Y"),
+                        'hora' => $purchaseOrderDt->format("H:i")
+                    ]; 
+                    
+                    $index= 1;
+                    $filter = array();
+                    $emails = DB::table('users')
+                                    ->select('email')
+                                    ->where( 'branch_office_cf_id' ,$branchOffice->id)
+                                    ->when( $filter,function ($query, $filter) {
+                                        $query->where('active', '=', '1');
+                                    })
+                                    ->get();
+                    $emailsSize = sizeof($emails);
+                    if($emailsSize > 0){
+                        $user = new User();
+                        $message = new PurchaseOrderNotify($user, $index, $pushOrderData );
+                        $message->subject('Orden de pedido ' . $purchaseOrder->id . ' Food Solutions');
+                        Mail::bcc($emails)->send($message);     
+                    }
+                }                                                           
+        }
+    }
 
     public function getDateNotify($order,  $cutDay ){
         

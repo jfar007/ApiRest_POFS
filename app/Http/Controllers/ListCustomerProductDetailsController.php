@@ -174,7 +174,7 @@ class ListCustomerProductDetailsController extends Controller
         }
 
         $response['message'] = 'ok';
-        $response['values'] =    ($resutl) ? $resutl : $listcts ;
+        $response['values'] =    ($resutl) ;//? $resutl : $listcts ;
         $response['user_id'] = 'PD';
         return response()->json($response,200);
     }

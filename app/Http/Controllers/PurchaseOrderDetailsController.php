@@ -6,12 +6,20 @@ use App\PurchaseOrderDetails;
 use App\Product;
 use App\PurchaseOrder;
 use App\OrderManagement;
+use App\Customer;
+use App\BranchOffice;
 use App\User;
 use App\Rol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+use Validator;
+use Illuminate\Support\Facades\URL;
+use App\Status;
+use PDF;
+use App\Mail\PurchaseOrderNotify;
+use Mail;
 
 
 class PurchaseOrderDetailsController extends Controller
@@ -224,82 +232,65 @@ class PurchaseOrderDetailsController extends Controller
 
 
 
+    
+
        /**
-     * Display the specified resource.
+     * Muestra pedidos con filtro a partir de la sucursal (Branch Office), Fecha Inicial y Fecha Final
      *
      * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
      * @return \Illuminate\Http\Response
      */
-    public function showPurchaseOrder(Request $request)
+    public function showPOrders(Request $request)
     {
         try{
 
-            
-            $user = null;
-          
-                      // Log::info('$filter: '. $filter);
-            if ($request->session()->exists('user')) {
-       
-                $user = $request->session()->get('user');
-                Log::info('entro session' .  $user );
-                
-            }else if ($request->user()){    
-                $user = $request->$request->user();
-                Log::info('entro request' .  $user );
-            }
-
-            if(! $user == null ){
-                 $rol = $user->rol_id; 
-                if($rol == Rol::$distribuidor){
-                    // Log::info('entro distribuidor' .  $rol );
-
-                    $purchaseOrder =  DB::table('purchase_order')
-                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
-                    ->get(); 
-             
-       
-                        $max = sizeof($purchaseOrder);
-                    
-                        for($i = 0; $i < $max;$i++)
-                        {
-                        
-                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
-                        $this->valideRelations($por);
-                     }
-
-                
-
-                }else if($rol == Rol::$sucursal){
-                    $purchaseOrder = DB::table('purchase_order')
-                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
-                    ->limit(2)->get();                    
-                    $max = sizeof($purchaseOrder);
-                
-                    for($i = 0; $i < $max;$i++)
-                    {
-                        $por= new   PurchaseOrderDetails( get_object_vars($purchaseOrder[$i]));
-                        $this->valideRelations($por);
-                    }
-                }else{
-                    Log::info('nooo entro ' .  $rol );
-
-                }
-                
-                $response['message'] = 'ok';
-                $response['values'] = $purchaseOrder;
-                $response['user_id'] = 'PD';
-                return response()->json($response,200);
-
-               
-            }else{
-
-                $response['message'] = 'error';
-                $response['values'] = ['error details' => 'User no exist'];
-                $response['user_id'] = 'PD';
-                return response()->json($response,200);
-            }
+        $resutl = array();      
+        $validator = Validator::make($request->all(), [
+            'branch_office_id' => 'required|max:255',
+            'start_date' => 'required|date',
+            'finish_date' => 'required|date'
+            ]);
 
         
+            if ($validator->fails()) {         
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $validator->errors()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+        $sdate = date_create($request->start_date);
+        $fdate = date_create($request->finish_date);
+     
+
+        $filter = [
+            'start_date' => $sdate,
+            'finish_date' => $fdate
+        ];
+        $podt = DB::table('purchase_order')
+                ->select('purchase_order_details.*')
+                ->leftJoin('purchase_order_details', 'purchase_order.id', '=', 'purchase_order_details.purchase_order_id')
+                ->where('purchase_order.branch_office_id', $request->branch_office_id)
+                ->when( $filter,function ($query, $filter) {
+                    $query->where('purchase_order_details.quantity', '>', '0')
+                          ->whereBetween('purchase_order_details.purchase_order_date', [ $filter['start_date'],  $filter['finish_date']]);         
+                })
+                ->orderBy('purchase_order_details.purchase_order_date')
+                ->get();
+    
+        $max = sizeof($podt);
+    
+        for($i = 0; $i < $max;$i++)
+        {
+        
+            $pod= new   PurchaseOrderDetails( get_object_vars($podt[$i]));
+            
+            $this->valideRelations($pod);
+            $resutl[] =  $pod;
+        }
+                
+
+
         }  catch (Exception $e) {
             $response['message'] = 'error';
             $response['values'] = ['error details' => $e->getMessage()];
@@ -314,7 +305,10 @@ class PurchaseOrderDetailsController extends Controller
         //     $this->valideRelations($po);
         // }
     
-     
+        $response['message'] = 'ok';
+        $response['values'] = $resutl;
+        $response['user_id'] = 'PD';
+        return response()->json($response,200);
 
     }
 
@@ -438,17 +432,12 @@ class PurchaseOrderDetailsController extends Controller
         }else if ($request->user()){
             $user = $request->$request->user();
         }
-
-        $stateGenerado = 2;
-
         $pohe= PurchaseOrder::where('id', $id)->first();
         if($pohe){
             $pohe->users_lm_id =   $user->id;
-            $pohe->status_id = $stateGenerado;
+            $pohe->status_id = Status::$generado;
             $pohe->save();
         }
-        
-        $orderMng = OrderManagement::where('customer_id', $user->customer_id );
         
         $filter = [
             'task_id' => 1,
@@ -466,6 +455,23 @@ class PurchaseOrderDetailsController extends Controller
                       ->where('task_id', $filter['task_id']);
                 })
         ->update(['from' => $newCutDate]);    
+        
+        //Elimar items con cantidad 0
+
+        DB::table('purchase_order_details')
+        ->where('purchase_order_id',  $id)
+        ->when( $filter,function ($query, $filter) {
+                $query->where('quantity','=' ,'0');
+                })
+        ->delete();    
+
+
+        //Enviar email
+
+    
+        $this->generateandSendPDF( $pohe->id, $pohe->branch_office_id, $user, $pohe);
+          
+
 
     }  catch (Exception $e) {
         $response['message'] = 'error';
@@ -481,6 +487,54 @@ class PurchaseOrderDetailsController extends Controller
     return response()->json($response,200);
 
     }
+
+
+    
+
+    public function generateandSendPDF($poid, $b0, $user, $pohe)
+    {
+        $podts = DB::table('purchase_order_details')
+        ->select(
+            'purchase_order_details.purchase_order_date', 
+            'product.name as productname'
+            , 'purchase_order_details.quantity', 'unit.name as unitname', 'product.packsize'
+            )
+        ->leftJoin('product', 'purchase_order_details.product_id', '=', 'product.id')
+        ->leftJoin('unit', 'product.unit_id', '=', 'unit.id')
+        ->where('purchase_order_details.purchase_order_id',  $poid)
+        ->orderBy('purchase_order_details.purchase_order_date')
+        ->get();
+
+        $branchoffice = BranchOffice::where('id', $b0)->first();
+        $customer = Customer::where('id',$branchoffice->customer_id )->first();
+   
+  
+        $data['pedido'] = $poid;      
+        $data['orders'] =  $podts;
+        $data['branchoffice'] =  $branchoffice;
+        $data['customer'] =  $customer;
+
+
+        $pdf = PDF::loadView('OrdersPDF', $data);
+        // $pdfName = 'PurchaseOrder_' . $poid . '.pdf';
+
+
+        $index = 2;
+        $pushOrderData = [
+            'pedido' => $pohe->id
+        ]; 
+
+        $message = new PurchaseOrderNotify($user, $index, $pushOrderData );
+        
+        $pdfName = 'PurchaseOrder_' .  $pohe->id . '.pdf';
+        $message->attachData($pdf->output(),  $pdfName);
+        $message->subject('Pedido generado ' . $pohe->id . ' Food Solutions');
+        Mail::to($user->email)->send($message);
+
+
+        // return $pdf->download($pdfName);
+    }
+
 
     public function chageStateDistribuidorUser(Request $request, $id, $statusId){
         try{

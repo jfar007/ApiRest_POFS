@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\PurchaseOrder;
 use App\User;
 use App\Status;
+use App\Rol;
 use App\BranchOffice;
 use App\Customer;
 use Validator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
@@ -63,15 +65,99 @@ class PurchaseOrderController extends Controller
         // 2. Enviar mail 
         
 
-    /**
+
+
+       /**
      * Display the specified resource.
      *
-     * @param  \App\PurchaseOrder  $purchaseOrder
+     * @param  \App\PurchaseOrderDetails  $purchaseOrderDetails
      * @return \Illuminate\Http\Response
      */
-    public function show(PurchaseOrder $purchaseOrder)
+    public function show(Request $request)
     {
-        //
+        try{
+
+            
+            $user = null;
+            $result = array();
+                      // Log::info('$filter: '. $filter);
+            if ($request->session()->exists('user')) {
+       
+                $user = $request->session()->get('user');
+ 
+            }else if ($request->user()){    
+                $user = $request->$request->user();
+            }
+
+            if(! $user == null ){
+                 $rol = $user->rol_id; 
+                 $purchaseOrder = null;
+                if($rol == Rol::$distribuidor){
+                  
+                    $purchaseOrder =  DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->get(); 
+             
+       
+                        $max = sizeof($purchaseOrder);
+                    
+                        for($i = 0; $i < $max;$i++)
+                        {
+                        
+                        $por= new   PurchaseOrder( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
+                        $result[] = $por;
+                    }
+
+                
+
+                }else if($rol == Rol::$sucursal){
+                    $purchaseOrder = DB::table('purchase_order')
+                    ->orderBy('purchase_order.status_id','purchase_order.cut_date')
+                    ->limit(2)->get();                    
+                    $max = sizeof($purchaseOrder);
+                
+                    for($i = 0; $i < $max;$i++)
+                    {
+                        $por= new   PurchaseOrder( get_object_vars($purchaseOrder[$i]));
+                        $this->valideRelations($por);
+                        $result[] = $por;
+                    }
+                }else{
+ 
+                }
+                
+                $response['message'] = 'ok';
+                $response['values'] = $result;
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
+
+               
+            }else{
+
+                $response['message'] = 'error';
+                $response['values'] = ['error details' => 'User no exist'];
+                $response['user_id'] = 'PD';
+                return response()->json($response,200);
+            }
+
+        
+        }  catch (Exception $e) {
+            $response['message'] = 'error';
+            $response['values'] = ['error details' => $e->getMessage()];
+            $response['user_id'] = 'PD';
+            return response()->json($response,415);
+        }
+
+
+        // $podt = PurchaseOrderDetails::where('purchase_order_id', $id)->get();
+
+        // foreach($podt as $po){
+        //     $this->valideRelations($po);
+        // }
+    
+     
+
     }
 
     /**

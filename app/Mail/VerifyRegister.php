@@ -22,6 +22,7 @@ class VerifyRegister extends Mailable
      public $user;
      public $register;
 
+
     public function __construct(User $user,  $register)
     {
         $this->user = $user;
