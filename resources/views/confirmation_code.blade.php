@@ -10,7 +10,7 @@
     <h2>Gracias por registrarte en <strong>FoodSolutionsMarket</strong> !</h2>
     <p>Por favor confirma tu correo electrónico.</p>
     <p>Para ello simplemente debes hacer click en el siguiente enlace:</p>
-    <a href="{{ url('api/u/verify/' . $confirmation_code) }}">Clic para confirmar tu email</a>
+    <a href="{{ url('api/verify/' . $confirmation_code) }}">Clic para confirmar tu email</a>
     
     <p>Para ingresar a la plataforma utilice los siguientes datos de ingreso:</p>
 
@@ -25,6 +25,8 @@
     <h4> Usuario:   {{ $username }} </h4>
     <h4> Password:  {{ $password }} </h4>
 @endif
+
+<div><img src="http://admins.foodsolutionsmarket.com/logo_email.jpg" alt=""></div>
 
 </body>
 </html>

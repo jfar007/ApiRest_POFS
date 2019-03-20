@@ -42,7 +42,8 @@ class VerifyRegister extends Mailable
             'password' => $this->user->password,
             'confirmation_code' => $this->user->confirmation_code,
             'register' => $this->register,
-        ]);
+        ])
+            ->subject('Confirmar Cuenta');
 
     }
 }

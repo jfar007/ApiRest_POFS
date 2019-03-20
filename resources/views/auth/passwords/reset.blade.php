@@ -65,4 +65,5 @@
     @parent
 
     {{ Html::style(mix('assets/auth/css/passwords.css')) }}
-@endsection--}}
+@endsection
+--}}

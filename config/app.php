@@ -164,6 +164,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
        // Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
          BenSampo\Enum\EnumServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
    
         /*
          * Package Service Providers...
@@ -230,6 +231,7 @@ return [
         //'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'JWTAuth'   => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
+        'Image' => Intervention\Image\Facades\Image::class,
     ],
 
 ];

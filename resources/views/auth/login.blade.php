@@ -53,7 +53,7 @@
                             <div>
 
                                 {{--<a class="reset_pass" href="{{ route('password.request') }}">--}}
-                                <a class="reset_pass pull-right" href="">
+                                <a class="reset_pass pull-right" href="{{route('formReestablecer')}}">
                                     Recuperar Contraseña
                                 </a>
                             </div>
@@ -63,7 +63,7 @@
 
                             <div class="separator">
                                 <p class="change_link">No tienes una cuenta?
-                                    <a href=""
+                                    <a href="{{route('register')}}"
                                        class="to_register"> Registrarse </a>
                                 </p>
 
@@ -105,31 +105,6 @@
     @parent
     <script src="{{asset('js/tableDynamic.js')}}"></script>
     <script src="{{asset('js/customTheme.js')}}"></script>
-   {{-- <script src="{{asset('js/data.js')}}"></script>
 
-    <script>
-    const login = new Vue({
-    el: '#login',
-    data: {
-        logins: [],
-    newUser: '',
-    newPassword:''
-    },
-    methods: {
-        authenticate: function () {
-            var urlLogin = "api/u/lg";
-             axios.post(urlLogin, {
-                 username: this.newUser,
-                 password: this.newPassword
-
-            }).then(response => {this.logins = response.data;
-                     toastr.success('usuario autenticado');
-        }).catch ( );
-        },
-
-    }
-    });
-    </script>
---}}
 @endsection
 

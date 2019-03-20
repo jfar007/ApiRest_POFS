@@ -19,8 +19,6 @@
                                 <ul class="dropdown-menu" role="menu">
                                     <li><a href="#">Configurar</a>
                                     </li>
-
-
                                 </ul>
                             </li>
 
@@ -30,34 +28,40 @@
                     <div id="new-product-content" class="x_content">
                         <br/>
                         <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left"
-                              method="POST" v-on:submit.prevent="createCategory">
-
+                              method="POST" action="{{route('categoriasCrear')}}">
+                              {{csrf_field()}}
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="category">Categoria<span
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="name">Nombre<span
                                             class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <input type="text" id="category" v-model="newCategory" required="required"
-                                           class="form-control col-md-7 col-xs-12">
+                                    <input type="text" id="name" required="required"
+                                           class="form-control col-md-7 col-xs-12" name="name">
                                 </div>
                             </div>
+
+
                             <div class="form-group">
-                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="shortname">Nombre
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="short_name">Nombre
                                     Abreviado<span class="required">*</span>
                                 </label>
                                 <div class="col-md-6 col-sm-6 col-xs-12">
-                                    <input type="text" id="shortname" name="shortname" v-model="newShortName"
+                                    <input type="text" id="short_name" name="short_name"
                                            required="required"
                                            class="form-control col-md-7 col-xs-12">
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="active" class="control-label col-md-3 col-sm-3 col-xs-12">Activar</label>
 
-                                <div class="col-md-1 col-sm-1 col-xs-12">
-                                    <input id="active" v-model="newActive" class="form-control col-md-3 col-xs-12"
-                                           type="checkbox" checked>
+                            <div class="form-group">
+                                <label for="active"
+                                       class="control-label col-md-3 col-sm-3 col-xs-12">Activo</label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <select id="active" class="form-control col-md-7 col-xs-12"
+                                            name="active">
+                                        <option value="0">No</option>
+                                        <option value="1">Si</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -102,41 +106,51 @@
                                 <th>Categoria</th>
                                 <th>Nombre Abreviado</th>
                                 <th>Activo</th>
-                                <th>Fecha Creación</th>
-                                <th>Fecha Modificación</th>
+
                                 <th>Acciones</th>
 
                             </tr>
                             </thead>
 
 
-                            <tbody v-for="value in categories.values">
-                            <tr>
-                                <td>@{{value.name}}</td>
-                                <td>@{{value.short_name}}</td>
-                                <td>@{{value.active}}</td>
-                                <td>@{{value.created_at}}</td>
-                                <td>@{{value.updated_at}}</td>
-                                <td>
-                                    <div class="dropdown table-actions-dropdown">
-                                        <button class="btn btn-success dropdown-toggle" type="button"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Acciones
-                                        </button>
-                                        <ul class="dropdown-menu table-actions-dropdown-popup"
-                                            aria-labelledby="dropdownMenu2">
+                            <tbody>
+                            @foreach($categories as $value)
+                                <tr>
+                                    <td>{{$value->name}}</td>
+                                    <td>{{$value->short_name}}</td>
+                                    @if($value->active == 1)
+                                        <td>Si</td>
+                                    @else
+                                        <td>No</td>
+                                    @endif
 
-                                            <li>
-                                                {{-- <a href="{{ route('convalidacionView', ['id' => $convalidacion->id_convalidaciones]) }}">Detalles</a>--}}
-                                                <a  data-toggle="modal" data-target="#myModal"
-                                                   v-on:click.prevent="editCategory(value)">Modificar</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
 
-                            </tr>
+                                    <td>
+                                        <div class="dropdown table-actions-dropdown">
+                                            <button class="btn btn-success dropdown-toggle" type="button"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Acciones
+                                            </button>
+                                            <ul class="dropdown-menu table-actions-dropdown-popup"
+                                                aria-labelledby="dropdownMenu2">
 
+
+                                                <li>
+
+                                                    <a href="{{ route('categoriasEditar', ['id' => $value->id]) }}">Modificar</a>
+
+                                                </li>
+
+                                                <li>
+                                                    <a href="{{route('categoriasEliminar', ['id' =>$value->id])}}" onclick="return confirm('Esta seguro de eliminar esta categoria?')"
+                                                    >Eliminar</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -145,44 +159,7 @@
 
         </div>
 
-        {{--/Modal Update Category--}}
-        {{--Add New Product Modal--}}
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title text-center" id="myModalLabel">Editar Categoria</h4>
-                    </div>
-                    <div class="modal-body text-left">
-                        <form  method="POST" v-on:submit.prevent="updateCategory(fill.id)">
-                            {{ csrf_field() }}
-                            <div class="form-group">
-                                <label for="category">Categoria</label>
-                                <input id="category" v-model="fill.category" class="form-control " type="text"
-                                       name="middle-name">
-                            </div>
 
-                            <div class="form-group">
-                                <label for="shortname">Nombre Abreviado</label>
-                                <input id="shortname" v-model="fill.shortname" class="form-control " type="text">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="active">Activo</label>
-                                <input id="active" v-model="fill.active" class="form-control " type="checkbox">
-                            </div>
-
-
-                            <button id="agregar" type="submit" class="btn btn-success"
-                                   >Actualizar
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     </div>
 
@@ -213,79 +190,10 @@
     <script src="{{asset('js/customTheme.js')}}"></script>
     <script src="{{asset('js/data.js')}}"></script>
     <script>
-        const category = new Vue({
-            el: '#crud-category',
-            created: function () {
-                this.getCategory();
-            },
-            data: {
-                categories: [],
-                newCategory: '',
-                newShortName: '',
-                newActive: '',
-                fill: {'id': '', 'category': '', 'shortname': '', 'active': ''}
-            },
-            methods: {
-                getCategory: function () {
-                    var urlCategory = "api/cg";
-                    axios.get(urlCategory).then(response => {this.categories = response.data; toastr.success('Datos Cargados con éxito');});
-
-                },
-
-                deleteCategory: function (value) {
-                    var url = 'api/cg/' + value.id;
-
-
-                },
-
-                createCategory: function () {
-
-                    var url = 'api/cg';
-                    axios.post(url, {
-                        name: this.newCategory,
-                        short_name: this.newShortName,
-                        active: this.newActive
-
-                    }).then(response => {
-
-                        this.getCategory();
-                        this. cleanField();
-                }).
-                    catch();
-
-
-                },
-                
-                editCategory: function (value) {
-
-                 this.fill.id = value.id;
-                 this.fill.category = value.name;
-                 this.fill.shortname = value.short_name;
-                 this.fill.active = value.active;
-
-                },
-                
-                updateCategory:function (id) {
-                var url = 'cg/' + id;
-
-                axios.post(url,this.fill).then(response => {
-                    toastr.success('Categoria actializada correctamente');
-                    this.getCategory();});
-
-                },
-                cleanField: function () {
-
-                       newCategory= '',
-                        newShortName= '',
-                        newActive=''
-                }
-
-
-            }
-        });
 
 
     </script>
 
+    @include('partials.notify')
 
 @endsection
