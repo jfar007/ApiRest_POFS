@@ -126,3 +126,4 @@ Route::get('/rpo','PurchaseOrderDetailsController@showPOrders');//Reporte pedido
 
 Route::get('/podtpdf/{id}/{bo}','PurchaseOrderDetailsController@generatePDF');//Reporte pedidos Filtro (Sucursal, fecha inicial, fecha final)
 
+Route::get('/popdf/{id}','PurchaseOrderDetailsController@downloadOrder');//Get PDF PushOrder

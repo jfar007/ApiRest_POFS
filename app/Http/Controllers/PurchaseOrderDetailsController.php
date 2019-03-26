@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LoginResult;
 use App\PurchaseOrderDetails;
 use App\Product;
 use App\PurchaseOrder;
@@ -11,6 +12,7 @@ use App\BranchOffice;
 use App\User;
 use App\Rol;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
@@ -20,6 +22,7 @@ use App\Status;
 use PDF;
 use App\Mail\PurchaseOrderNotify;
 use Mail;
+use App\Http\Helpers;
 
 
 class PurchaseOrderDetailsController extends Controller
@@ -571,6 +574,79 @@ class PurchaseOrderDetailsController extends Controller
         return response()->json($response,200);
     }
 
+    public function downloadOrder(Request $request, $id){
+        $user = Auth::user();
+
+        if(LoginResult::SUCCESS === $this->verifyPassword($request,   $user)){
+
+            $pohe= PurchaseOrder::where('id',  $id)->first();
+
+            if($pohe){
+                if($pohe->status_id != Status::$creado){
+                    $podts = DB::table('purchase_order_details')
+                        ->select(
+                            'purchase_order_details.purchase_order_date',
+                            'product.name as productname'
+                            , 'purchase_order_details.quantity', 'unit.name as unitname', 'product.packsize'
+                        )
+                        ->leftJoin('product', 'purchase_order_details.product_id', '=', 'product.id')
+                        ->leftJoin('unit', 'product.unit_id', '=', 'unit.id')
+                        ->where('purchase_order_details.purchase_order_id',  $id)
+                        ->orderBy('purchase_order_details.purchase_order_date')
+                        ->get();
+
+                    $branchoffice = BranchOffice::where('id', $pohe->branch_office_id)->first();
+                    $customer = Customer::where('id',$pohe->customer_id )->first();
+
+
+                    $data['pedido'] = $id;
+                    $data['orders'] =  $podts;
+                    $data['branchoffice'] =  $branchoffice;
+                    $data['customer'] =  $customer;
+                    $pdf = PDF::loadView('OrdersPDF', $data);
+                    $pdfName = 'PurchaseOrder_' . $id. '.pdf';
+                    return $pdf->download($pdfName);
+                }else{
+                    Helpers::notifyMsg('Error','Solo puede descargar pedidos diferente a estado creado');
+                }
+
+            }else{
+                Helpers::notifyMsg('Error','Pedido Ingresado no existe');
+            }
+
+        }else{
+            Helpers::notifyMsg('Error','Escribio mal el password');
+        }
+    }
+    public function verifyPassword(Request $request, $user){
+
+
+        $encodedPass = base64_encode($request['password']);
+
+        if (!password_verify($encodedPass, $user->password)) {
+            if ($user->fail_attempt_count <= 5) {
+                User::where('id', $user->id)
+                    ->update([
+                        'is_locked_out' => false,
+                        'lock_start_date_time' => null,
+                        'fail_attempt_count' => ($user->fail_attempt_count + 1)
+                    ]);
+
+                return LoginResult::INVALID_PASSWORD;
+            }
+
+            User::where('id', $user->id)
+                ->update([
+                    'fail_attempt_count' => 0,
+                    'is_locked_out' => true,
+                    'lock_start_date_time' => date('Y-m-d H:i:s')
+                ]);
+
+            return LoginResult::LOCKED_OUT;
+        }else{
+            return LoginResult::SUCCESS;
+        }
+    }
 
 
 }
