@@ -125,8 +125,8 @@ class RegisterController extends Controller
 
                 $user->save();
 
-                return view('auth.confirmation_register') ;
-
+//                return view('auth.confirmation_register') ;
+                return 'ok';
            }
 
 

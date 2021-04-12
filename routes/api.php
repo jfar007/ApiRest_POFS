@@ -90,12 +90,12 @@ Route::post('/lcp/{id}','ListCustomerProductController@update');//Update ListCus
 Route::get('/lcp/d/{id}','ListCustomerProductController@destroy');//Delete ListCustomerProduct
 
 
-Route::post('/lcpdt','ListCustomerProductDetailsController@store');//Create one ListCustomerProductdetails
+//Route::post('/lcpdt','ListCustomerProductDetailsController@store');//Create one ListCustomerProductdetails
 Route::post('/lcpdtjson','ListCustomerProductDetailsController@storeJson');//Create and Edit ListCustomerProductdetails 
 Route::get('/lcpdt/{list_customer_product_id}','ListCustomerProductDetailsController@show');//Get ListCustomerProductdetails from list_customer_product_id
 Route::post('/lcpdt/{id}','ListCustomerProductDetailsController@update');//Edit ListCustomerProductdetails 
 Route::get('/lcpdt/d/{id}','ListCustomerProductDetailsController@destroy');//Get ListCustomerProductdetails from list_customer_product_id
-Route::get('/lcpdtsg','ListCustomerProductDetailsController@showSuggest');//Get ListCustomerProductdetails products suggest for customer_id
+Route::post('/lcpdtsg','ListCustomerProductDetailsController@showSuggest');//Get ListCustomerProductdetails products suggest for customer_id
 
 
 
